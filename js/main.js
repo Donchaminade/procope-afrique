@@ -16,6 +16,15 @@
     new WOW().init();
 
 
+    // Dark / Light mode toggle (theme is applied early by an inline <head> script)
+    $('#theme-toggle').on('click', function () {
+        var current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+        var next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        try { localStorage.setItem('procope-theme', next); } catch (e) { }
+    });
+
+
     // Sticky Navbar
     $(window).scroll(function () {
         if ($(this).scrollTop() > 45) {
