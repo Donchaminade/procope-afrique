@@ -148,6 +148,14 @@
                             <h1 class="display-1 text-white mb-md-4 animated zoomIn">Bienvenue à PROCOPE Afrique</h1>
                             <a href="about.html" class="btn btn-primary py-md-3 px-md-5 me-3 animated slideInLeft">En savoir plus</a>
                             <a href="contact.html" class="btn btn-outline-light py-md-3 px-md-5 animated slideInRight">Contactez-nous</a>
+                            <div class="hero-flags animated fadeInUp">
+                                <div class="hero-flags-label text-white">Les pays qui ont déjà accueilli PROCOPE</div>
+                                <img class="hero-flag" style="animation-delay: 0s;" src="https://flagcdn.com/w80/tg.png" alt="Togo">
+                                <img class="hero-flag" style="animation-delay: .3s;" src="https://flagcdn.com/w80/sn.png" alt="Sénégal">
+                                <img class="hero-flag" style="animation-delay: .6s;" src="https://flagcdn.com/w80/ci.png" alt="Côte d'Ivoire">
+                                <img class="hero-flag" style="animation-delay: .9s;" src="https://flagcdn.com/w80/ng.png" alt="Nigeria">
+                                <img class="hero-flag" style="animation-delay: 1.2s;" src="https://flagcdn.com/w80/bj.png" alt="Bénin">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -316,6 +324,32 @@
     <!-- Features End -->
 
 
+    <!-- Countries Start -->
+    <div class="container-fluid py-5 wow fadeInUp" data-wow-delay="0.1s">
+        <div class="container py-3">
+            <div class="section-title text-center position-relative pb-3 mb-4 mx-auto" style="max-width: 600px;">
+                <h5 class="fw-bold text-primary text-uppercase">PROCOPE en Afrique</h5>
+                <h1 class="mb-0">Les pays qui ont déjà accueilli PROCOPE</h1>
+            </div>
+            <div class="flags-marquee">
+                <div class="flags-track">
+                    <span class="flag-item"><img src="https://flagcdn.com/w80/tg.png" alt="Togo"> Togo</span>
+                    <span class="flag-item"><img src="https://flagcdn.com/w80/sn.png" alt="Sénégal"> Sénégal</span>
+                    <span class="flag-item"><img src="https://flagcdn.com/w80/ci.png" alt="Côte d'Ivoire"> Côte d'Ivoire</span>
+                    <span class="flag-item"><img src="https://flagcdn.com/w80/ng.png" alt="Nigeria"> Nigeria</span>
+                    <span class="flag-item"><img src="https://flagcdn.com/w80/bj.png" alt="Bénin"> Bénin</span>
+                    <span class="flag-item" aria-hidden="true"><img src="https://flagcdn.com/w80/tg.png" alt=""> Togo</span>
+                    <span class="flag-item" aria-hidden="true"><img src="https://flagcdn.com/w80/sn.png" alt=""> Sénégal</span>
+                    <span class="flag-item" aria-hidden="true"><img src="https://flagcdn.com/w80/ci.png" alt=""> Côte d'Ivoire</span>
+                    <span class="flag-item" aria-hidden="true"><img src="https://flagcdn.com/w80/ng.png" alt=""> Nigeria</span>
+                    <span class="flag-item" aria-hidden="true"><img src="https://flagcdn.com/w80/bj.png" alt=""> Bénin</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Countries End -->
+
+
     <!-- Service Start -->
     <div class="container-fluid py-5 wow fadeInUp" data-wow-delay="0.1s">
         <div class="container py-5">
@@ -366,6 +400,60 @@
     <!-- Service End -->
 
 
+    <!-- Next Training (WhatsApp registration) Start -->
+    <div class="container-fluid py-5 wow fadeInUp" data-wow-delay="0.1s">
+        <div class="container py-5">
+            <div class="row g-5 align-items-center">
+                <div class="col-lg-6">
+                    <div class="section-title position-relative pb-3 mb-4">
+                        <h5 class="fw-bold text-primary text-uppercase">Prochaine Formation</h5>
+                        <h1 class="mb-0">Inscrivez-vous à notre prochaine formation</h1>
+                    </div>
+                    <p class="mb-4">Les places sont limitées. Remplissez ce formulaire : votre inscription est envoyée <span class="text-primary">directement sur WhatsApp</span>, sans procédure compliquée.</p>
+                    <div class="row g-0">
+                        <div class="col-sm-6"><h6 class="mb-3"><i class="fa fa-check text-primary me-2"></i>Formations animées par des experts</h6></div>
+                        <div class="col-sm-6"><h6 class="mb-3"><i class="fa fa-check text-primary me-2"></i>Attestation à la clé</h6></div>
+                        <div class="col-sm-6"><h6 class="mb-3"><i class="fa fa-check text-primary me-2"></i>Réseau d'entrepreneurs</h6></div>
+                        <div class="col-sm-6"><h6 class="mb-3"><i class="fa fa-check text-primary me-2"></i>Places limitées</h6></div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="bg-light rounded p-4 p-md-5">
+                        <form id="training-form">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <input type="text" id="tf-name" class="form-control bg-white border-0" placeholder="Votre Nom et Prénom" required style="height: 55px;">
+                                </div>
+                                <div class="col-12">
+                                    <input type="tel" id="tf-phone" class="form-control bg-white border-0" placeholder="Votre numéro WhatsApp" required style="height: 55px;">
+                                </div>
+                                <div class="col-12">
+                                    <input type="email" id="tf-email" class="form-control bg-white border-0" placeholder="Votre Email (facultatif)" style="height: 55px;">
+                                </div>
+                                <div class="col-12">
+                                    <select id="tf-training" class="form-select bg-white border-0" style="height: 55px;">
+                                        <option value="" selected>Choisir une formation</option>
+                                        <option>Entrepreneuriat & création d'entreprise</option>
+                                        <option>Maîtriser l'art du pitch</option>
+                                        <option>Gestion & business model</option>
+                                        <option>Marketing digital</option>
+                                        <option>Autre / à définir</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <textarea id="tf-message" class="form-control bg-white border-0" rows="3" placeholder="Un message (facultatif)"></textarea>
+                                </div>
+                                <div class="col-12">
+                                    <button class="btn btn-success w-100 py-3" type="submit"><i class="fab fa-whatsapp me-2"></i>M'inscrire via WhatsApp</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Next Training End -->
 
 
 
@@ -491,6 +579,31 @@
         </div>
     </div>
     <!-- Testimonial End -->
+
+
+    <!-- Video Testimonials (TikTok) Start -->
+    <div class="container-fluid py-5 wow fadeInUp" data-wow-delay="0.1s">
+        <div class="container py-5">
+            <div class="section-title text-center position-relative pb-3 mb-5 mx-auto" style="max-width: 600px;">
+                <h5 class="fw-bold text-primary text-uppercase">Témoignages Vidéo</h5>
+                <h1 class="mb-0">Ils racontent leur expérience en vidéo</h1>
+            </div>
+            <div class="pc-scroller-wrap">
+                <div id="vt-scroller" class="pc-scroller"></div>
+                <div id="vt-swipe-hint" class="pc-swipe-hint">
+                    <span class="swipe-hand"><i class="fa fa-hand-pointer"></i></span>
+                    <p>Balayez pour voir le suivant</p>
+                    <small>Survolez pour mettre en pause &bull; cliquez pour lire la vidéo</small>
+                </div>
+            </div>
+            <div class="text-center mt-4">
+                <a href="https://www.tiktok.com/@procope.afrique" target="_blank" rel="noopener" class="btn btn-primary py-3 px-5">
+                    <svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true" style="vertical-align:-.125em;margin-right:.5rem;"><path d="M16.5 3c.3 2.1 1.5 3.6 3.5 3.9v2.4c-1.2.1-2.4-.2-3.5-.8v5.6c0 3.2-2.5 5.6-5.6 5.6S5.3 17.3 5.3 14.1s2.5-5.6 5.7-5.5v2.5c-.2-.1-.5-.1-.7-.1-1.7 0-3.1 1.4-3.1 3.1s1.4 3.1 3.1 3.1 3-1.4 3-3.1V3h3.2z"/></svg>Voir plus sur TikTok
+                </a>
+            </div>
+        </div>
+    </div>
+    <!-- Video Testimonials End -->
 
 
     <!-- Team Start -->
@@ -623,6 +736,38 @@
     <!-- Blog End -->
 
 
+    <!-- Previous Trainings Posters Start -->
+    <div class="container-fluid py-5 wow fadeInUp" data-wow-delay="0.1s">
+        <div class="container py-5">
+            <div class="section-title text-center position-relative pb-3 mb-5 mx-auto" style="max-width: 600px;">
+                <h5 class="fw-bold text-primary text-uppercase">Nos Formations</h5>
+                <h1 class="mb-0">Affiches des formations précédentes</h1>
+            </div>
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6 wow zoomIn" data-wow-delay="0.2s">
+                    <div class="poster-item" data-poster="img/affiche-1.jpg" data-poster-alt="Affiche d'une formation en entrepreneuriat de PROCOPE Afrique">
+                        <img src="img/affiche-1.jpg" loading="lazy" alt="Affiche d'une formation en entrepreneuriat de PROCOPE Afrique">
+                        <div class="poster-zoom"><i class="fa fa-search-plus"></i></div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 wow zoomIn" data-wow-delay="0.4s">
+                    <div class="poster-item" data-poster="img/affiche-2.jpg" data-poster-alt="Affiche d'un bootcamp de pitch de PROCOPE Afrique">
+                        <img src="img/affiche-2.jpg" loading="lazy" alt="Affiche d'un bootcamp de pitch de PROCOPE Afrique">
+                        <div class="poster-zoom"><i class="fa fa-search-plus"></i></div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 wow zoomIn" data-wow-delay="0.6s">
+                    <div class="poster-item" data-poster="img/affiche-3.jpg" data-poster-alt="Affiche d'une formation femmes & innovation de PROCOPE Afrique">
+                        <img src="img/affiche-3.jpg" loading="lazy" alt="Affiche d'une formation femmes & innovation de PROCOPE Afrique">
+                        <div class="poster-zoom"><i class="fa fa-search-plus"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Previous Trainings Posters End -->
+
+
     <!-- Vendor Start -->
     <div class="container-fluid py-5 wow fadeInUp" data-wow-delay="0.1s">
         <div class="container py-5 mb-5">
@@ -718,6 +863,42 @@
     <!-- Footer End -->
 
 
+    <!-- Video Testimonial Modal -->
+    <div class="modal fade" id="videoModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title">Témoignage vidéo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="vt-modal-frame" id="vt-frame"></div>
+                    <p id="vt-fallback" class="text-center text-muted mt-3" style="display: none;">La vidéo ne peut pas être lue ici. Ouvrez-la sur TikTok ci-dessous.</p>
+                    <div class="text-center mt-3">
+                        <a id="vt-open-tiktok" href="#" target="_blank" rel="noopener" class="btn btn-outline-primary">
+                            <svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true" style="vertical-align:-.125em;margin-right:.4rem;"><path d="M16.5 3c.3 2.1 1.5 3.6 3.5 3.9v2.4c-1.2.1-2.4-.2-3.5-.8v5.6c0 3.2-2.5 5.6-5.6 5.6S5.3 17.3 5.3 14.1s2.5-5.6 5.7-5.5v2.5c-.2-.1-.5-.1-.7-.1-1.7 0-3.1 1.4-3.1 3.1s1.4 3.1 3.1 3.1 3-1.4 3-3.1V3h3.2z"/></svg>Ouvrir sur TikTok
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Poster Lightbox Modal -->
+    <div class="modal fade" id="posterModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="poster-modal-img" class="poster-modal-img" src="" alt="Affiche de formation PROCOPE Afrique">
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <!-- Back to Top -->
     <a href="#" class="btn btn-lg btn-primary btn-lg-square rounded back-to-top"><i class="bi bi-arrow-up"></i></a>
 
@@ -733,6 +914,7 @@
 
     <!-- Template Javascript -->
     <script src="js/main.js"></script>
+    <script src="js/procope.js"></script>
 </body>
 
 </html>
