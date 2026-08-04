@@ -1,0 +1,15 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    { "source": "/feature.html", "destination": "/", "permanent": false },
+    { "source": "/feature", "destination": "/", "permanent": false },
+    { "source": "/price.html", "destination": "/", "permanent": false },
+    { "source": "/price", "destination": "/", "permanent": false },
+    { "source": "/quote.html", "destination": "/", "permanent": false },
+    { "source": "/quote", "destination": "/", "permanent": false },
+    { "source": "/team.html", "destination": "/", "permanent": false },
+    { "source": "/team", "destination": "/", "permanent": false },
+    { "source": "/testimonial.html", "destination": "/", "permanent": false },
+    { "source": "/testimonial", "destination": "/", "permanent": false }
+  ]
+}
