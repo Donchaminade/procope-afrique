@@ -31,12 +31,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://procopeafrique.vercel.app/blog.html</loc>
-    <lastmod>2026-08-04</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://procopeafrique.vercel.app/ressources.html</loc>
     <lastmod>2026-08-04</lastmod>
     <changefreq>monthly</changefreq>
@@ -54,16 +48,22 @@
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
+
+  <!-- Pages masquées avant le lancement (redirigées vers l'accueil via vercel.json).
+       Pour les réactiver : décommentez le bloc voulu ci-dessous, retirez la redirection
+       dans vercel.json et supprimez le bloc PROCOPE:DISABLED-PAGE dans la page HTML.
+  <url>
+    <loc>https://procopeafrique.vercel.app/blog.html</loc>
+    <lastmod>2026-08-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
   <url>
     <loc>https://procopeafrique.vercel.app/detail.html</loc>
     <lastmod>2026-08-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.4</priority>
   </url>
-
-  <!-- Pages masquées avant le lancement (redirigées vers l'accueil via vercel.json).
-       Pour les réactiver : décommentez le bloc voulu ci-dessous, retirez la redirection
-       dans vercel.json et supprimez le bloc PROCOPE:DISABLED-PAGE dans la page HTML.
   <url>
     <loc>https://procopeafrique.vercel.app/team.html</loc>
     <lastmod>2026-08-04</lastmod>

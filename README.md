@@ -19,11 +19,10 @@ Ce projet est basé sur le modèle de site web "Startup" créé par [HTML Codex]
     - À Propos
     - Nos Services
     - Projets Incubés
-    - Actualités & Événements
     - Espace Candidature
-    - Publications & Ressources
-    - Partenaires
+    - Publications & Ressources / Partenaires (menu « Plus »)
     - Contact
+    - Actualités & Événements / article (`blog.html`, `detail.html`) — pages conservées mais masquées pour le moment
 - **Contenu personnalisé :** Tout le contenu a été adapté en français pour refléter l'identité de PROCOPE Afrique.
 - **Barre de navigation et pied de page dynamiques :** Mis à jour sur l'ensemble du site.
 
