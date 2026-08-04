@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://donchaminade.github.io/procope-afrique/sitemap.xml
+Sitemap: https://procopeafrique.vercel.app/sitemap.xml
