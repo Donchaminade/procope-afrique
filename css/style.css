@@ -490,3 +490,465 @@ h6,
         margin-bottom: -75px;
     }
 }
+
+
+/*** Dark Mode ***/
+/* Smooth transitions when switching themes (applies both directions) */
+body,
+.bg-light,
+.bg-white,
+.bg-dark,
+.service-item,
+.team-item,
+.blog-item,
+.testimonial-item,
+.form-control,
+.form-select {
+    transition: background-color .4s ease, color .4s ease, border-color .4s ease;
+}
+
+/* Theme toggle button in the navbar */
+.theme-toggle {
+    background: transparent;
+    border: 0;
+    line-height: 1;
+    padding: .375rem .5rem;
+    color: var(--primary);
+    cursor: pointer;
+}
+
+.theme-toggle:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.theme-toggle i {
+    font-size: 20px;
+    transition: transform .4s ease;
+}
+
+.theme-toggle:hover i {
+    transform: rotate(20deg) scale(1.1);
+}
+
+html[data-theme="dark"] .theme-toggle .icon-to-dark {
+    display: none;
+}
+
+html[data-theme="light"] .theme-toggle .icon-to-light {
+    display: none;
+}
+
+/* Base surfaces */
+html[data-theme="dark"] body {
+    background-color: #0a1526;
+    color: #e6edf7;
+}
+
+html[data-theme="dark"] h1,
+html[data-theme="dark"] h2,
+html[data-theme="dark"] h3,
+html[data-theme="dark"] h4,
+html[data-theme="dark"] h5,
+html[data-theme="dark"] h6 {
+    color: #f2f6fc;
+}
+
+html[data-theme="dark"] .bg-light {
+    background-color: #10203a !important;
+}
+
+html[data-theme="dark"] .bg-white {
+    background-color: #142744 !important;
+}
+
+html[data-theme="dark"] .bg-dark {
+    background-color: #050b16 !important;
+}
+
+html[data-theme="dark"] .text-dark {
+    color: #e6edf7 !important;
+}
+
+html[data-theme="dark"] .text-muted {
+    color: #9fb0c7 !important;
+}
+
+/* Borders */
+html[data-theme="dark"] .border,
+html[data-theme="dark"] .border-top,
+html[data-theme="dark"] .border-bottom,
+html[data-theme="dark"] .border-start,
+html[data-theme="dark"] .border-end {
+    border-color: rgba(255, 255, 255, .12) !important;
+}
+
+/* Forms (also covers inputs that use .bg-light) */
+html[data-theme="dark"] .form-control,
+html[data-theme="dark"] .form-select {
+    background-color: #0e1d33 !important;
+    color: #e6edf7 !important;
+    border-color: rgba(255, 255, 255, .15) !important;
+}
+
+html[data-theme="dark"] .form-control::placeholder {
+    color: #8ea3bf;
+}
+
+html[data-theme="dark"] .form-select option {
+    background-color: #0e1d33;
+    color: #e6edf7;
+}
+
+/* Cards / items shadows */
+html[data-theme="dark"] .team-item:hover,
+html[data-theme="dark"] .blog-item:hover,
+html[data-theme="dark"] .testimonial-carousel .owl-item.center .testimonial-item {
+    box-shadow: 0 0 30px rgba(0, 0, 0, .55) !important;
+}
+
+html[data-theme="dark"] .testimonial-carousel .owl-item.center .testimonial-item {
+    background: #142744 !important;
+}
+
+html[data-theme="dark"] .testimonial-carousel .owl-dot {
+    background: #2a3c5a;
+}
+
+html[data-theme="dark"] .testimonial-carousel .owl-dot.active {
+    background: var(--primary);
+}
+
+/* Navbar (sticky solid + collapsed mobile menu) */
+html[data-theme="dark"] .sticky-top.navbar-dark {
+    background: #0a1526 !important;
+}
+
+html[data-theme="dark"] .sticky-top.navbar-dark .navbar-nav .nav-link {
+    color: #e6edf7;
+}
+
+html[data-theme="dark"] .sticky-top.navbar-dark .navbar-nav .nav-link:hover,
+html[data-theme="dark"] .sticky-top.navbar-dark .navbar-nav .nav-link.active {
+    color: var(--primary);
+}
+
+@media (max-width: 991.98px) {
+    html[data-theme="dark"] .sticky-top.navbar-dark {
+        background: #0a1526;
+    }
+
+    html[data-theme="dark"] .navbar-dark .navbar-nav .nav-link,
+    html[data-theme="dark"] .navbar-dark .navbar-nav .nav-link.show,
+    html[data-theme="dark"] .sticky-top.navbar-dark .navbar-nav .nav-link {
+        color: #e6edf7;
+    }
+}
+
+/* Spinner overlay */
+html[data-theme="dark"] #spinner.bg-white,
+html[data-theme="dark"] #spinner {
+    background-color: #0a1526 !important;
+}
+
+
+/*** Video Testimonials (TikTok) ***/
+/* Horizontal, auto-scrolling, draggable/swipeable strip (driven by js/procope.js) */
+.pc-scroller {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding: 10px 4px 20px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    cursor: grab;
+    scroll-behavior: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.pc-scroller::-webkit-scrollbar {
+    display: none;
+}
+
+.pc-scroller.is-dragging {
+    cursor: grabbing;
+}
+
+.vt-card {
+    position: relative;
+    flex: 0 0 auto;
+    width: 210px;
+    aspect-ratio: 9 / 16;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #000;
+    box-shadow: 0 10px 30px rgba(9, 30, 62, .18);
+    transition: transform .4s ease, box-shadow .4s ease;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.vt-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 40px rgba(9, 30, 62, .28);
+}
+
+.vt-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    -webkit-user-drag: none;
+    pointer-events: none;
+}
+
+.vt-card .vt-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, rgba(0, 0, 0, .05) 40%, rgba(0, 0, 0, .75) 100%);
+}
+
+.vt-card .vt-play {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .92);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    box-shadow: 0 0 0 0 rgba(6, 163, 218, .6);
+    animation: vt-pulse 2.2s infinite;
+}
+
+@keyframes vt-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(6, 163, 218, .55); }
+    70% { box-shadow: 0 0 0 16px rgba(6, 163, 218, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(6, 163, 218, 0); }
+}
+
+.vt-card .vt-meta {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 12px 14px;
+    color: #fff;
+    text-align: left;
+}
+
+.vt-card .vt-meta h6 {
+    color: #fff !important;
+    margin: 0;
+    font-size: 15px;
+}
+
+.vt-card .vt-meta small {
+    opacity: .85;
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+.vt-card .vt-tiktok-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, .55);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+}
+
+/* Swipe tutorial overlay ("balayez pour voir le suivant") */
+.pc-scroller-wrap {
+    position: relative;
+}
+
+.pc-swipe-hint {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: rgba(9, 30, 62, .55);
+    color: #fff;
+    border-radius: 16px;
+    text-align: center;
+    padding: 20px;
+    transition: opacity .5s ease, visibility .5s ease;
+    cursor: pointer;
+}
+
+.pc-swipe-hint.is-hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.pc-swipe-hint .swipe-hand {
+    font-size: 44px;
+    animation: swipe-hand 1.6s ease-in-out infinite;
+}
+
+.pc-swipe-hint p {
+    margin: 0;
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.pc-swipe-hint small {
+    opacity: .85;
+}
+
+@keyframes swipe-hand {
+    0% { transform: translateX(26px) rotate(8deg); opacity: .35; }
+    50% { transform: translateX(-26px) rotate(-8deg); opacity: 1; }
+    100% { transform: translateX(26px) rotate(8deg); opacity: .35; }
+}
+
+/* Video pop-up (modal) responsive frame */
+.vt-modal-frame {
+    position: relative;
+    width: 100%;
+    max-width: 340px;
+    margin: 0 auto;
+    aspect-ratio: 9 / 16;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.vt-modal-frame iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+
+/*** Countries flags marquee ***/
+.flags-marquee {
+    overflow: hidden;
+    width: 100%;
+}
+
+.flags-marquee .flags-track {
+    display: flex;
+    width: max-content;
+    animation: flags-scroll 28s linear infinite;
+}
+
+.flags-marquee:hover .flags-track {
+    animation-play-state: paused;
+}
+
+.flags-marquee .flag-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 26px;
+    font-weight: 600;
+    color: var(--dark);
+    white-space: nowrap;
+}
+
+html[data-theme="dark"] .flags-marquee .flag-item {
+    color: #e6edf7;
+}
+
+.flags-marquee .flag-item img {
+    width: 40px;
+    height: auto;
+    border-radius: 3px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .2);
+}
+
+@keyframes flags-scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+}
+
+/* Hero mini flags with a slow "vibrate" (wiggle) */
+.hero-flags {
+    margin-top: 26px;
+}
+
+.hero-flags .hero-flags-label {
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    opacity: .85;
+    margin-bottom: 8px;
+}
+
+.hero-flags .hero-flag {
+    display: inline-block;
+    width: 34px;
+    margin: 0 5px;
+    border-radius: 3px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .35);
+    animation: hero-flag-wiggle 3.4s ease-in-out infinite;
+    transform-origin: center bottom;
+}
+
+@keyframes hero-flag-wiggle {
+    0%, 100% { transform: rotate(-4deg) translateY(0); }
+    50% { transform: rotate(4deg) translateY(-3px); }
+}
+
+
+/*** Previous training posters ***/
+.poster-item {
+    position: relative;
+    display: block;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(9, 30, 62, .15);
+    cursor: pointer;
+}
+
+.poster-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .5s ease;
+}
+
+.poster-item:hover img {
+    transform: scale(1.06);
+}
+
+.poster-item .poster-zoom {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 26px;
+    background: rgba(9, 30, 62, 0);
+    opacity: 0;
+    transition: .4s ease;
+}
+
+.poster-item:hover .poster-zoom {
+    opacity: 1;
+    background: rgba(9, 30, 62, .45);
+}
+
+.poster-modal-img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
