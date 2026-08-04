@@ -14,8 +14,8 @@
     /* =========================== CONFIG =========================== */
 
     // WhatsApp number in international format, digits only (no +, no spaces).
-    // Togo +228 7014 57 73  ->  22870145773
-    var WHATSAPP_NUMBER = "22870145773";
+    // Togo +228 96 45 76 95  ->  22896457695
+    var WHATSAPP_NUMBER = "22896457695";
 
     // Public TikTok profile (the "Voir plus sur TikTok" button).
     var TIKTOK_PROFILE = "https://www.tiktok.com/@procope.afrique";
