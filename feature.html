@@ -3,6 +3,10 @@
 
 <head>
     <meta charset="utf-8">
+    <!-- PROCOPE:DISABLED-PAGE - page masquee avant le lancement (redirige vers l'accueil).
+         Reactivation: supprimez ce bloc, retirez la redirection correspondante dans vercel.json,
+         puis remettez l'URL dans sitemap.xml. -->
+    <script>window.location.replace("index.html");</script>
     <!-- Apply saved theme early to avoid flash of incorrect theme -->
     <script>
         (function () {
