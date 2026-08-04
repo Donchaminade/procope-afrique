@@ -949,12 +949,19 @@ html[data-theme="dark"] .flags-marquee .flag-item {
 
 .hero-flags .hero-flag {
     display: inline-block;
-    width: 34px;
-    margin: 0 5px;
+    width: 30px;
+    margin: 0 4px 6px;
     border-radius: 3px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, .35);
     animation: hero-flag-wiggle 3.4s ease-in-out infinite;
     transform-origin: center bottom;
+}
+
+@media (max-width: 575.98px) {
+    .hero-flags .hero-flag {
+        width: 26px;
+        margin: 0 3px 6px;
+    }
 }
 
 @keyframes hero-flag-wiggle {
