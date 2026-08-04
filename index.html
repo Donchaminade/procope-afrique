@@ -1,12 +1,41 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     <meta charset="utf-8">
-    <title>Accueil - PROCOPE</title>
+    <!-- Apply saved theme early to avoid flash of incorrect theme -->
+    <script>
+        (function () {
+            try {
+                var t = localStorage.getItem('procope-theme');
+                if (!t) { t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'; }
+                document.documentElement.setAttribute('data-theme', t);
+            } catch (e) { document.documentElement.setAttribute('data-theme', 'light'); }
+        })();
+    </script>
+    <title>PROCOPE Afrique | Incubateur d'entrepreneurs et d'innovation</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <meta content="Free HTML Templates" name="keywords">
-    <meta content="Free HTML Templates" name="description">
+    <meta content="incubateur Afrique, entrepreneuriat, innovation, startup, mentorat, financement, PROCOPE, Lomé, Togo, accompagnement" name="keywords">
+    <meta content="PROCOPE Afrique, premier incubateur social en Afrique : accompagnement, formation, mentorat et financement des jeunes entrepreneurs pour transformer leurs idées en projets durables." name="description">
+    <meta name="author" content="PROCOPE Afrique">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#06A3DA">
+    <link rel="canonical" href="https://donchaminade.github.io/procope-afrique/">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="PROCOPE Afrique">
+    <meta property="og:locale" content="fr_FR">
+    <meta property="og:title" content="PROCOPE Afrique | Incubateur d'entrepreneurs et d'innovation">
+    <meta property="og:description" content="PROCOPE Afrique, premier incubateur social en Afrique : accompagnement, formation, mentorat et financement des jeunes entrepreneurs pour transformer leurs idées en projets durables.">
+    <meta property="og:url" content="https://donchaminade.github.io/procope-afrique/">
+    <meta property="og:image" content="https://donchaminade.github.io/procope-afrique/img/carousel-1.jpg">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="PROCOPE Afrique | Incubateur d'entrepreneurs et d'innovation">
+    <meta name="twitter:description" content="PROCOPE Afrique, premier incubateur social en Afrique : accompagnement, formation, mentorat et financement des jeunes entrepreneurs pour transformer leurs idées en projets durables.">
+    <meta name="twitter:image" content="https://donchaminade.github.io/procope-afrique/img/carousel-1.jpg">
 
     <!-- Favicon -->
     <link href="img/logo.png" rel="icon">
@@ -29,6 +58,24 @@
 
     <!-- Template Stylesheet -->
     <link href="css/style.css" rel="stylesheet">
+
+    <script type="application/ld+json">
+{
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "PROCOPE Afrique",
+        "alternateName": "Centre Incubateur PROCOPE Afrique",
+        "url": "https://donchaminade.github.io/procope-afrique/",
+        "logo": "https://donchaminade.github.io/procope-afrique/img/logo.png",
+        "description": "PROCOPE Afrique est le premier incubateur social dédié à l'innovation et à l'entrepreneuriat en Afrique : accompagnement, formation, mentorat et financement des jeunes porteurs de projets.",
+        "telephone": "+228 7014 57 73",
+        "address": {
+                "@type": "PostalAddress",
+                "addressLocality": "Lomé",
+                "addressCountry": "TG"
+        }
+}
+    </script>
 </head>
 
 <body>
@@ -84,6 +131,7 @@
                     <a href="partenaires.html" class="nav-item nav-link">Partenaires</a>
                     <a href="contact.html" class="nav-item nav-link">Contact</a>
                 </div>
+                <button type="button" id="theme-toggle" class="btn theme-toggle ms-3" aria-label="Basculer entre le mode clair et sombre" title="Mode clair / sombre"><i class="bi bi-moon-stars-fill icon-to-dark"></i><i class="bi bi-sun-fill icon-to-light"></i></button>
                 <button type="button" class="btn text-primary ms-3" data-bs-toggle="modal" data-bs-target="#searchModal"><i class="fa fa-search"></i></button>
             </div>
         </nav>
@@ -91,7 +139,7 @@
         <div id="header-carousel" class="carousel slide carousel-fade" data-bs-ride="carousel">
             <div class="carousel-inner">
                 <div class="carousel-item active">
-                    <img class="w-100" src="img/carousel-1.jpg" alt="Image">
+                    <img class="w-100" src="img/carousel-1.jpg" alt="Jeunes entrepreneurs africains collaborant dans l'incubateur PROCOPE Afrique">
                     <div class="carousel-caption d-flex flex-column align-items-center justify-content-center">
                         <div class="p-3" style="max-width: 900px;">
                             <h5 class="text-white text-uppercase mb-3 animated slideInDown">Soutenir l’entrepreneuriat et l’innovation en Afrique</h5>
@@ -202,7 +250,7 @@
                 </div>
                 <div class="col-lg-5" style="min-height: 500px;">
                     <div class="position-relative h-100">
-                        <img class="position-absolute w-100 h-100 rounded wow zoomIn" data-wow-delay="0.9s" src="img/about.jpg" style="object-fit: cover;">
+                        <img class="position-absolute w-100 h-100 rounded wow zoomIn" data-wow-delay="0.9s" src="img/about.jpg" loading="lazy" alt="Entrepreneurs africains accompagnés par l'incubateur PROCOPE Afrique" style="object-fit: cover;">
                     </div>
                 </div>
             </div>
@@ -239,7 +287,7 @@
                 </div>
                 <div class="col-lg-4  wow zoomIn" data-wow-delay="0.9s" style="min-height: 350px;">
                     <div class="position-relative h-100">
-                        <img class="position-absolute w-100 h-100 rounded wow zoomIn" data-wow-delay="0.1s" src="img/feature.jpg" style="object-fit: cover;">
+                        <img class="position-absolute w-100 h-100 rounded wow zoomIn" data-wow-delay="0.1s" src="img/feature.jpg" loading="lazy" alt="Jeune entrepreneure africaine dans l'espace de coworking PROCOPE Afrique" style="object-fit: cover;">
                     </div>
                 </div>
                 <div class="col-lg-4">
@@ -454,7 +502,7 @@
                 <div class="col-lg-4 wow slideInUp" data-wow-delay="0.3s">
                     <div class="team-item bg-light rounded overflow-hidden">
                         <div class="team-img position-relative overflow-hidden">
-                            <img class="img-fluid w-100" src="img/team-1.jpg" alt="">
+                            <img class="img-fluid w-100" src="img/team-1.jpg" loading="lazy" alt="Membre de l'équipe de PROCOPE Afrique">
                             <div class="team-social">
                                 <a class="btn btn-lg btn-primary btn-lg-square rounded" href=""><i class="fab fa-twitter fw-normal"></i></a>
                                 <a class="btn btn-lg btn-primary btn-lg-square rounded" href=""><i class="fab fa-facebook-f fw-normal"></i></a>
@@ -471,7 +519,7 @@
                 <div class="col-lg-4 wow slideInUp" data-wow-delay="0.6s">
                     <div class="team-item bg-light rounded overflow-hidden">
                         <div class="team-img position-relative overflow-hidden">
-                            <img class="img-fluid w-100" src="img/team-2.jpg" alt="">
+                            <img class="img-fluid w-100" src="img/team-2.jpg" loading="lazy" alt="Membre de l'équipe de PROCOPE Afrique">
                             <div class="team-social">
                                 <a class="btn btn-lg btn-primary btn-lg-square rounded" href=""><i class="fab fa-twitter fw-normal"></i></a>
                                 <a class="btn btn-lg btn-primary btn-lg-square rounded" href=""><i class="fab fa-facebook-f fw-normal"></i></a>
@@ -488,7 +536,7 @@
                 <div class="col-lg-4 wow slideInUp" data-wow-delay="0.9s">
                     <div class="team-item bg-light rounded overflow-hidden">
                         <div class="team-img position-relative overflow-hidden">
-                            <img class="img-fluid w-100" src="img/team-3.jpg" alt="">
+                            <img class="img-fluid w-100" src="img/team-3.jpg" loading="lazy" alt="Membre de l'équipe de PROCOPE Afrique">
                             <div class="team-social">
                                 <a class="btn btn-lg btn-primary btn-lg-square rounded" href=""><i class="fab fa-twitter fw-normal"></i></a>
                                 <a class="btn btn-lg btn-primary btn-lg-square rounded" href=""><i class="fab fa-facebook-f fw-normal"></i></a>
@@ -519,7 +567,7 @@
                 <div class="col-lg-4 wow slideInUp" data-wow-delay="0.3s">
                     <div class="blog-item bg-light rounded overflow-hidden">
                         <div class="blog-img position-relative overflow-hidden">
-                            <img class="img-fluid" src="img/blog-1.jpg" alt="">
+                            <img class="img-fluid" src="img/blog-1.jpg" loading="lazy" alt="Soirée de networking des entrepreneurs PROCOPE Afrique">
                             <a class="position-absolute top-0 start-0 bg-primary text-white rounded-end mt-5 py-2 px-4" href="">Événement</a>
                         </div>
                         <div class="p-4">
@@ -536,7 +584,7 @@
                 <div class="col-lg-4 wow slideInUp" data-wow-delay="0.6s">
                     <div class="blog-item bg-light rounded overflow-hidden">
                         <div class="blog-img position-relative overflow-hidden">
-                            <img class="img-fluid" src="img/blog-2.jpg" alt="">
+                            <img class="img-fluid" src="img/blog-2.jpg" loading="lazy" alt="Conférence PROCOPE Afrique sur l'entrepreneuriat">
                             <a class="position-absolute top-0 start-0 bg-primary text-white rounded-end mt-5 py-2 px-4" href="">Actualité</a>
                         </div>
                         <div class="p-4">
@@ -553,7 +601,7 @@
                 <div class="col-lg-4 wow slideInUp" data-wow-delay="0.9s">
                     <div class="blog-item bg-light rounded overflow-hidden">
                         <div class="blog-img position-relative overflow-hidden">
-                            <img class="img-fluid" src="img/blog-3.jpg" alt="">
+                            <img class="img-fluid" src="img/blog-3.jpg" loading="lazy" alt="Atelier de formation des entrepreneurs PROCOPE Afrique">
                             <a class="position-absolute top-0 start-0 bg-primary text-white rounded-end mt-5 py-2 px-4" href="">Formation</a>
                         </div>
                         <div class="p-4">
