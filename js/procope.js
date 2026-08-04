@@ -213,6 +213,7 @@
 
             var url = "https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(lines.join("\n"));
             window.open(url, "_blank");
+            form.reset();
         });
     }
 
