@@ -674,10 +674,6 @@ html[data-theme="dark"] #spinner {
     cursor: grabbing;
 }
 
-.pc-scroller.is-dragging .vt-card {
-    pointer-events: none;
-}
-
 .vt-card {
     position: relative;
     flex: 0 0 auto;

@@ -98,8 +98,7 @@
         scroller.addEventListener("pointerdown", function (e) {
             isDown = true; dragMoved = false; startX = e.clientX; startScroll = scroller.scrollLeft;
             if (e.pointerType === "mouse") {
-                state.drag = true;
-                scroller.classList.add("is-dragging");
+                state.drag = true;  // pause auto-scroll while the button is held
             } else {
                 state.touchPause = true;
                 if (touchTimer) clearTimeout(touchTimer);
@@ -109,8 +108,13 @@
         window.addEventListener("pointermove", function (e) {
             if (!isDown) return;
             var dx = e.clientX - startX;
-            if (Math.abs(dx) > 6) dragMoved = true;
-            if (e.pointerType === "mouse") {
+            // Only treat it as a drag once the pointer actually moves, so a plain
+            // click keeps the cards clickable (needed to open the video modal).
+            if (Math.abs(dx) > 6 && !dragMoved) {
+                dragMoved = true;
+                if (e.pointerType === "mouse") scroller.classList.add("is-dragging");
+            }
+            if (dragMoved && e.pointerType === "mouse") {
                 scroller.scrollLeft = startScroll - dx;
                 e.preventDefault();
             }
@@ -178,7 +182,7 @@
             } else {
                 hint.addEventListener("click", dismiss);
                 scroller.addEventListener("pointerdown", dismiss, { once: true });
-                setTimeout(dismiss, 6000);
+                setTimeout(dismiss, 8000);
             }
         }
     }
