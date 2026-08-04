@@ -935,6 +935,23 @@ html[data-theme="dark"] .flags-marquee .flag-item {
 }
 
 /* Hero mini flags with a slow "vibrate" (wiggle) */
+.hero-tagline {
+    font-family: 'Nunito', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.45;
+    max-width: 36rem;
+    margin-left: auto;
+    margin-right: auto;
+    opacity: .95;
+}
+
+@media (min-width: 992px) {
+    .hero-tagline {
+        font-size: 1.5rem;
+    }
+}
+
 .hero-flags {
     margin-top: 26px;
 }
