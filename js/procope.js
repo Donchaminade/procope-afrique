@@ -40,9 +40,9 @@
         return m ? m[1] : null;
     }
 
-    function tiktokEmbed(url) {
-        var id = tiktokVideoId(url);
-        return id ? "https://www.tiktok.com/player/v1/" + id + "?autoplay=1&loop=1&controls=1" : null;
+    // A real TikTok video id is a long number; the demo placeholders are 000...00X.
+    function isRealTikTokId(id) {
+        return !!id && id.length >= 16 && !/^0{8,}/.test(id);
     }
 
     function esc(s) {
@@ -63,7 +63,7 @@
 
         var cards = VIDEO_TESTIMONIALS.map(function (v) {
             return (
-                '<div class="vt-card" data-url="' + esc(v.url) + '" role="button" tabindex="0" ' +
+                '<div class="vt-card" data-url="' + esc(v.url) + '" data-thumb="' + esc(v.thumb) + '" role="button" tabindex="0" ' +
                 'aria-label="Lire le témoignage vidéo de ' + esc(v.name) + '">' +
                 '<img src="' + esc(v.thumb) + '" alt="Témoignage vidéo de ' + esc(v.name) + '" loading="lazy">' +
                 '<span class="vt-tiktok-badge">' + TIKTOK_SVG + "</span>" +
@@ -78,7 +78,7 @@
 
         var state = { hover: false, drag: false, modal: false, touchPause: false };
         var isDown = false, dragMoved = false, startX = 0, startScroll = 0, touchTimer = null;
-        var SPEED = 0.5;
+        var SPEED = 0.7;
 
         function paused() { return state.hover || state.drag || state.modal || state.touchPause; }
 
@@ -134,16 +134,19 @@
 
         function openCard(card) {
             var url = card.getAttribute("data-url");
-            var embed = tiktokEmbed(url);
+            var thumb = card.getAttribute("data-thumb");
+            var id = tiktokVideoId(url);
             var frame = document.getElementById("vt-frame");
             var fallback = document.getElementById("vt-fallback");
             var openLink = document.getElementById("vt-open-tiktok");
             if (openLink) openLink.href = url || TIKTOK_PROFILE;
-            if (embed && frame) {
+            if (isRealTikTokId(id) && frame) {
+                var embed = "https://www.tiktok.com/player/v1/" + id + "?autoplay=1&loop=1&controls=1";
                 frame.innerHTML = '<iframe src="' + embed + '" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>';
                 if (fallback) fallback.style.display = "none";
-            } else {
-                if (frame) frame.innerHTML = "";
+            } else if (frame) {
+                // No real TikTok link yet: show the preview thumbnail + a hint instead of a broken embed.
+                frame.innerHTML = '<img src="' + esc(thumb) + '" alt="" style="width:100%;height:100%;object-fit:cover;">';
                 if (fallback) fallback.style.display = "block";
             }
             state.modal = true;
