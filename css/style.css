@@ -284,14 +284,49 @@ h6,
     margin-bottom: 1rem !important;
 }
 
-@media (max-width: 576px) {
+/*
+ * Mobile/tablet: image aspect ratio makes the slide shorter than the caption
+ * (title + CTAs + flag grid). Bootstrap .carousel-item overflows hidden, so
+ * raise min-height and cover the photo instead of cropping the text/flags.
+ */
+@media (max-width: 991.98px) {
+    #header-carousel .carousel-item {
+        min-height: max(32rem, calc(100svh - 5.5rem));
+    }
+
+    #header-carousel .carousel-item > img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+    }
+
     .carousel-caption {
-        padding-top: 3.25rem;
-        padding-bottom: 2rem;
+        /* Navbar is in normal flow on <lg — no need for large top inset */
+        padding-top: 1.5rem;
+        padding-bottom: 1.75rem;
     }
 
     .carousel-caption .hero-content {
-        transform: translateY(-0.5rem);
+        transform: none;
+    }
+}
+
+@media (max-width: 576px) {
+    #header-carousel .carousel-item {
+        min-height: max(30rem, calc(100svh - 5rem));
+    }
+
+    .carousel-caption {
+        padding-top: 1.1rem;
+        padding-bottom: 1.35rem;
+    }
+
+    .carousel-caption .hero-content {
+        transform: none;
+        padding: .65rem .5rem !important;
     }
 
     .carousel-caption h5 {
@@ -299,9 +334,12 @@ h6,
         font-weight: 500 !important;
     }
 
-    .carousel-caption h1 {
-        font-size: 2.35rem;
+    .carousel-caption h1,
+    .carousel-caption .hero-content .display-1 {
+        font-size: 1.85rem;
         font-weight: 700 !important;
+        margin-bottom: .65rem !important;
+        line-height: 1.15;
     }
 }
 
@@ -594,6 +632,15 @@ html[data-theme="dark"] .objectif-card-img {
 /*** Team ***/
 .team-item {
     transition: .5s;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.team-item > .text-center {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
 }
 
 .team-social {
@@ -1229,30 +1276,40 @@ html[data-theme="dark"] .flags-marquee .flag-item {
 
 @media (max-width: 575.98px) {
     .hero-tagline {
-        font-size: 1.2rem;
+        font-size: 1.05rem;
+        line-height: 1.35;
+        margin-bottom: 1rem;
+    }
+
+    .hero-cta {
+        margin-bottom: 1rem;
+        gap: .55rem .7rem;
     }
 
     .hero-cta .btn {
-        min-width: 10.5rem;
-        font-size: 1rem;
-        padding: .65rem 1.35rem;
+        min-width: 9.75rem;
+        font-size: .95rem;
+        padding: .55rem 1.15rem;
     }
 
     .hero-flags {
-        padding: 1rem 1.1rem 1.15rem;
+        padding: .85rem .9rem 1rem;
     }
 
     .hero-flags .hero-flags-label {
-        font-size: .78rem;
-        letter-spacing: .06em;
+        font-size: .72rem;
+        letter-spacing: .05em;
+        margin-bottom: .7rem;
     }
 
     .hero-flags-row {
-        gap: .45rem .55rem;
+        gap: .4rem .5rem;
+        /* room for hero-flag-wiggle (rotate + translateY) so flags aren't clipped */
+        padding-bottom: .35rem;
     }
 
     .hero-flags .hero-flag {
-        width: 44px;
+        width: 40px;
     }
 }
 
@@ -1308,7 +1365,7 @@ html[data-theme="dark"] .flags-marquee .flag-item {
 }
 
 
-/*** Candidature dual panels (formation / incubation) ***/
+/*** Candidature panels (4 onglets + hash) ***/
 .cand-toggle-wrap {
     display: flex;
     justify-content: center;
@@ -1333,9 +1390,9 @@ html[data-theme="dark"] .flags-marquee .flag-item {
     color: #091E3E;
     font-family: 'Nunito', sans-serif;
     font-weight: 700;
-    font-size: 1rem;
+    font-size: .95rem;
     line-height: 1.2;
-    padding: .85rem 1.35rem;
+    padding: .75rem 1.1rem;
     border-radius: 999px;
     cursor: pointer;
     transition: background .25s ease, color .25s ease, box-shadow .25s ease;
@@ -1363,32 +1420,31 @@ html[data-theme="dark"] .flags-marquee .flag-item {
     color: #fff;
 }
 
-.cand-slider {
-    overflow: hidden;
+.cand-panels {
     width: 100%;
-    transition: height .4s ease;
-}
-
-.cand-slider-track {
-    display: flex;
-    width: 200%;
-    transition: transform .45s cubic-bezier(.4, 0, .2, 1);
-    will-change: transform;
-}
-
-.cand-slider[data-panel="incubation"] .cand-slider-track {
-    transform: translateX(-50%);
 }
 
 .cand-panel {
-    width: 50%;
-    flex: 0 0 50%;
-    padding: 0 .15rem;
-    box-sizing: border-box;
+    display: none;
+    animation: candPanelIn .35s ease;
+}
+
+.cand-panel.is-active {
+    display: block;
+}
+
+@keyframes candPanelIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .cand-cta-block h5 {
     font-family: 'Nunito', sans-serif;
+}
+
+.news-card img {
+    height: 200px;
+    object-fit: cover;
 }
 
 @media (max-width: 575.98px) {
@@ -1398,11 +1454,11 @@ html[data-theme="dark"] .flags-marquee .flag-item {
     }
 
     .cand-toggle-btn {
-        flex: 1 1 auto;
+        flex: 1 1 calc(50% - .35rem);
         text-align: center;
         white-space: normal;
-        font-size: .95rem;
-        padding: .75rem 1rem;
+        font-size: .85rem;
+        padding: .7rem .85rem;
     }
 }
 
@@ -1423,4 +1479,8 @@ html[data-theme="dark"] .cand-toggle-btn:focus-visible {
 html[data-theme="dark"] .cand-toggle-btn.is-active {
     background: var(--primary);
     color: #fff;
+}
+
+html[data-theme="dark"] .news-card {
+    background: #122038 !important;
 }

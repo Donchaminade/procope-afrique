@@ -16,13 +16,14 @@ Ce projet est basé sur le modèle de site web "Startup" créé par [HTML Codex]
 - **Responsive Design :** Adapté pour les ordinateurs, tablettes et mobiles.
 - **Pages multiples :**
     - Accueil
-    - À Propos
+    - À propos de nous
     - Nos Services
-    - Projets Incubés
-    - Espace Candidature
-    - Publications & Ressources / Partenaires (menu « Plus »)
-    - Contact
-    - Actualités & Événements / article (`blog.html`, `detail.html`) — pages conservées mais masquées pour le moment
+    - Projets incubés
+    - Actualités (`actualites.html` ; `blog.html` redirige vers cette page)
+    - Espace candidature (4 onglets : former / projet / emploi / partenaire)
+    - Contact (carte Lomé, Togo)
+    - Investisseurs & Partenaires (menu « Plus »)
+    - Pages masquées pré-lancement : `detail.html`, `ressources.html`, `team.html`, etc.
 - **Contenu personnalisé :** Tout le contenu a été adapté en français pour refléter l'identité de PROCOPE Afrique.
 - **Barre de navigation et pied de page dynamiques :** Mis à jour sur l'ensemble du site.
 
