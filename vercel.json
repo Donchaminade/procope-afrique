@@ -11,9 +11,11 @@
     { "source": "/team", "destination": "/", "permanent": false },
     { "source": "/testimonial.html", "destination": "/", "permanent": false },
     { "source": "/testimonial", "destination": "/", "permanent": false },
-    { "source": "/blog.html", "destination": "/", "permanent": false },
-    { "source": "/blog", "destination": "/", "permanent": false },
+    { "source": "/blog.html", "destination": "/actualites.html", "permanent": false },
+    { "source": "/blog", "destination": "/actualites.html", "permanent": false },
     { "source": "/detail.html", "destination": "/", "permanent": false },
-    { "source": "/detail", "destination": "/", "permanent": false }
+    { "source": "/detail", "destination": "/", "permanent": false },
+    { "source": "/ressources.html", "destination": "/", "permanent": false },
+    { "source": "/ressources", "destination": "/", "permanent": false }
   ]
 }

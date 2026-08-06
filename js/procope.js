@@ -387,7 +387,7 @@
             ].filter(Boolean);
 
             var lines = [
-                "Bonjour PROCOPE Afrique, je souhaite déposer ma candidature au programme d'incubation.",
+                "Bonjour PROCOPE Afrique, je souhaite déposer mon projet.",
                 "",
                 "Nom : " + name,
                 "Email : " + email,
@@ -419,26 +419,55 @@
         });
     }
 
-    /* ==================== CANDIDATURE PANEL TOGGLE ==================== */
+    /* ==================== PARTENAIRE FORM (WhatsApp) ==================== */
+
+    function initPartenaireForm() {
+        var form = document.getElementById("partenaire-form");
+        if (!form) return;
+        form.addEventListener("submit", function (e) {
+            e.preventDefault();
+            var name = fieldValue("pf-name");
+            var email = fieldValue("pf-email");
+            var type = fieldValue("pf-type");
+            var msg = fieldValue("pf-message");
+            var lines = [
+                "Bonjour PROCOPE Afrique, je souhaite devenir partenaire.",
+                "",
+                "Nom / Organisation : " + name,
+                "Email : " + email
+            ];
+            if (type) lines.push("Type : " + type);
+            if (msg) lines.push("Message : " + msg);
+            openWhatsapp(lines.join("\n"));
+            form.reset();
+        });
+    }
+
+    /* ==================== CANDIDATURE PANEL TOGGLE (4 onglets + hash) ==================== */
 
     function initCandidaturePanels() {
         var slider = document.getElementById("cand-slider");
-        var track = document.getElementById("cand-slider-track");
         var tabs = document.querySelectorAll("[data-cand-panel]");
-        if (!slider || !track || !tabs.length) return;
+        if (!slider || !tabs.length) return;
 
-        var panels = {
-            formation: document.getElementById("cand-panel-formation"),
-            incubation: document.getElementById("cand-panel-incubation")
+        var keys = ["former", "projet", "emploi", "partenaire"];
+        // Legacy aliases from older links
+        var aliases = {
+            formation: "former",
+            incubation: "projet",
+            partner: "partenaire",
+            partenaires: "partenaire",
+            job: "emploi",
+            jobs: "emploi"
         };
 
-        function syncHeight(panelKey) {
-            var panel = panels[panelKey];
-            if (!panel) return;
-            slider.style.height = panel.offsetHeight + "px";
-        }
+        var panels = {};
+        keys.forEach(function (key) {
+            panels[key] = document.getElementById("cand-panel-" + key);
+        });
 
-        function setPanel(panelKey) {
+        function setPanel(panelKey, updateHash) {
+            panelKey = aliases[panelKey] || panelKey;
             if (!panels[panelKey]) return;
             slider.setAttribute("data-panel", panelKey);
 
@@ -449,46 +478,63 @@
                 btn.setAttribute("tabindex", active ? "0" : "-1");
             });
 
-            Object.keys(panels).forEach(function (key) {
+            keys.forEach(function (key) {
                 var panel = panels[key];
                 if (!panel) return;
                 var active = key === panelKey;
+                panel.classList.toggle("is-active", active);
                 panel.setAttribute("aria-hidden", active ? "false" : "true");
                 if (active) {
+                    panel.removeAttribute("hidden");
                     panel.removeAttribute("inert");
                 } else {
+                    panel.setAttribute("hidden", "");
                     panel.setAttribute("inert", "");
                 }
             });
 
-            // Wait a frame so layout settles after inert / content, then animate height.
-            window.requestAnimationFrame(function () {
-                syncHeight(panelKey);
-            });
+            if (updateHash !== false) {
+                try {
+                    if (history.replaceState) {
+                        history.replaceState(null, "", "#" + panelKey);
+                    } else {
+                        window.location.hash = panelKey;
+                    }
+                } catch (err) { /* ignore */ }
+            }
+        }
+
+        function panelFromHash() {
+            var h = (window.location.hash || "").replace(/^#/, "").toLowerCase();
+            if (!h) return null;
+            return aliases[h] || h;
         }
 
         tabs.forEach(function (btn) {
             btn.addEventListener("click", function () {
-                setPanel(btn.getAttribute("data-cand-panel"));
+                setPanel(btn.getAttribute("data-cand-panel"), true);
             });
             btn.addEventListener("keydown", function (e) {
                 if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
                 e.preventDefault();
-                var keys = ["formation", "incubation"];
-                var cur = slider.getAttribute("data-panel") || "formation";
+                var cur = slider.getAttribute("data-panel") || "former";
                 var idx = keys.indexOf(cur);
+                if (idx < 0) idx = 0;
                 if (e.key === "ArrowRight") idx = (idx + 1) % keys.length;
                 else idx = (idx - 1 + keys.length) % keys.length;
-                setPanel(keys[idx]);
+                setPanel(keys[idx], true);
                 var next = document.querySelector('[data-cand-panel="' + keys[idx] + '"]');
                 if (next) next.focus();
             });
         });
 
-        setPanel(slider.getAttribute("data-panel") || "formation");
-        window.addEventListener("resize", function () {
-            syncHeight(slider.getAttribute("data-panel") || "formation");
+        window.addEventListener("hashchange", function () {
+            var fromHash = panelFromHash();
+            if (fromHash && panels[fromHash]) setPanel(fromHash, false);
         });
+
+        var initial = panelFromHash() || slider.getAttribute("data-panel") || "former";
+        setPanel(initial, false);
     }
 
     /* ==================== POSTERS LIGHTBOX ==================== */
@@ -511,6 +557,7 @@
         initWhatsappForm();
         initContactForm();
         initCandidatureForm();
+        initPartenaireForm();
         initCandidaturePanels();
         initPosters();
     }
