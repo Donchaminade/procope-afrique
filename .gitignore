@@ -1,0 +1,3 @@
+# Temporary image drop folder — keep README only
+imgremp/*
+!imgremp/README.txt

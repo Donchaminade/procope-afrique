@@ -1,9 +1,13 @@
 /*
  * PROCOPE Afrique — interactive features (no backend required):
- *   - TikTok video-testimonials strip: smooth right-to-left auto-scroll,
- *     pause on hover, drag / swipe to browse, click to play in a pop-up,
+ *   - TikTok video-testimonials strip: step-by-step carousel (next card),
+ *     pause on hover, drag / swipe with snap, click to play in a pop-up,
  *     first-visit "swipe" tutorial, and a "see more on TikTok" link.
  *   - Registration form that opens a pre-filled WhatsApp message.
+ *   - Homepage contact form that opens a pre-filled WhatsApp message.
+ *   - Candidature form that opens a pre-filled WhatsApp message
+ *     (attachments must be sent manually in the chat — wa.me cannot attach files).
+ *   - Candidature page dual panels (formation / incubation) with slide toggle.
  *   - Previous-training posters lightbox.
  *
  * ---> EDIT THIS CONFIG with your real values. <---
@@ -20,17 +24,39 @@
     // Public TikTok profile (the "Voir plus sur TikTok" button).
     var TIKTOK_PROFILE = "https://www.tiktok.com/@procope.afrique";
 
+    // Auto-advance delay between cards (ms).
+    var VT_STEP_MS = 3800;
+
     // Video testimonials. Paste the real TikTok video links in `url`.
     // The video ID is auto-extracted from a standard link:
     //   https://www.tiktok.com/@user/video/1234567890123456789
-    // `thumb` is the local preview image shown in the strip.
+    // `thumb` = local cover (downloaded from TikTok oEmbed).
+    // `name` / `role` = light labels (handle + short title from oEmbed) — not invented person names.
     var VIDEO_TESTIMONIALS = [
-        { name: "Aïssatou Diop", role: "Fondatrice, AgriConnect", thumb: "img/vtestim-1.jpg", url: "https://www.tiktok.com/@procope.afrique/video/0000000000000000001" },
-        { name: "Moussa Traoré", role: "CEO, MobiSanté", thumb: "img/vtestim-2.jpg", url: "https://www.tiktok.com/@procope.afrique/video/0000000000000000002" },
-        { name: "Fatima Diallo", role: "Co-fondatrice, EduTech", thumb: "img/vtestim-3.jpg", url: "https://www.tiktok.com/@procope.afrique/video/0000000000000000003" },
-        { name: "David Okoro", role: "Fondateur, PayeFacile", thumb: "img/vtestim-4.jpg", url: "https://www.tiktok.com/@procope.afrique/video/0000000000000000004" },
-        { name: "Grace Mensah", role: "CEO, GreenBox", thumb: "img/vtestim-5.jpg", url: "https://www.tiktok.com/@procope.afrique/video/0000000000000000005" },
-        { name: "Kofi Boateng", role: "Fondateur, LogiTrans", thumb: "img/vtestim-6.jpg", url: "https://www.tiktok.com/@procope.afrique/video/0000000000000000006" }
+        {
+            name: "@mathieukunyabor",
+            role: "Entrepreneuriat étudiant",
+            thumb: "img/vt-thumb-1.jpg",
+            url: "https://www.tiktok.com/@mathieukunyabor/video/7646324253251374343"
+        },
+        {
+            name: "@mathieukunyabor",
+            role: "Feedbacks des participants",
+            thumb: "img/vt-thumb-2.jpg",
+            url: "https://www.tiktok.com/@mathieukunyabor/video/7609057601724124423"
+        },
+        {
+            name: "@mathieukunyabor",
+            role: "Récapitulatif de formation",
+            thumb: "img/vt-thumb-3.jpg",
+            url: "https://www.tiktok.com/@mathieukunyabor/video/7611656575941414162"
+        },
+        {
+            name: "@mathieukunyabor",
+            role: "Impact après formation",
+            thumb: "img/vt-thumb-4.jpg",
+            url: "https://www.tiktok.com/@mathieukunyabor/video/7618655760100134165"
+        }
     ];
 
     /* ============================ HELPERS ============================ */
@@ -61,36 +87,100 @@
         var scroller = document.getElementById("vt-scroller");
         if (!scroller) return;
 
-        var cards = VIDEO_TESTIMONIALS.map(function (v) {
+        var n = VIDEO_TESTIMONIALS.length;
+        if (!n) return;
+
+        var cards = VIDEO_TESTIMONIALS.map(function (v, i) {
+            var label = v.name || "Témoignage";
+            var meta = "";
+            if (v.name || v.role) {
+                meta = '<div class="vt-meta">' +
+                    (v.name ? "<h6>" + esc(v.name) + "</h6>" : "") +
+                    (v.role ? "<small>" + esc(v.role) + "</small>" : "") +
+                    "</div>";
+            }
             return (
                 '<div class="vt-card" data-url="' + esc(v.url) + '" data-thumb="' + esc(v.thumb) + '" role="button" tabindex="0" ' +
-                'aria-label="Lire le témoignage vidéo de ' + esc(v.name) + '">' +
-                '<img src="' + esc(v.thumb) + '" alt="Témoignage vidéo de ' + esc(v.name) + '" loading="lazy">' +
+                'aria-label="Lire le témoignage vidéo ' + (i + 1) + " — " + esc(label) + '">' +
+                '<img src="' + esc(v.thumb) + '" alt="Aperçu vidéo TikTok — ' + esc(label) + '" loading="lazy">' +
                 '<span class="vt-tiktok-badge">' + TIKTOK_SVG + "</span>" +
                 '<div class="vt-overlay"><span class="vt-play"><i class="fa fa-play"></i></span></div>' +
-                '<div class="vt-meta"><h6>' + esc(v.name) + '</h6><small>' + esc(v.role) + "</small></div>" +
+                meta +
                 "</div>"
             );
         }).join("");
 
-        // Duplicate the set so the auto-scroll can loop seamlessly.
+        // Duplicate the set so the step carousel can loop without a hard jump.
         scroller.innerHTML = cards + cards;
+        scroller.classList.add("vt-step-carousel");
 
         var state = { hover: false, drag: false, modal: false, touchPause: false };
         var isDown = false, dragMoved = false, startX = 0, startScroll = 0, touchTimer = null;
-        var SPEED = 0.7;
+        var index = 0;
+        var stepTimer = null;
+        var looping = false;
 
-        function paused() { return state.hover || state.drag || state.modal || state.touchPause; }
+        function paused() { return state.hover || state.drag || state.modal || state.touchPause || looping; }
 
-        function tick() {
-            if (!paused() && scroller.scrollWidth > scroller.clientWidth) {
-                scroller.scrollLeft += SPEED;
-                var half = scroller.scrollWidth / 2;
-                if (scroller.scrollLeft >= half) { scroller.scrollLeft -= half; }
-            }
-            requestAnimationFrame(tick);
+        function cardStep() {
+            var card = scroller.querySelector(".vt-card");
+            if (!card) return 0;
+            var gap = parseFloat(getComputedStyle(scroller).columnGap || getComputedStyle(scroller).gap) || 20;
+            return card.offsetWidth + gap;
         }
-        requestAnimationFrame(tick);
+
+        function scrollToIndex(i, smooth) {
+            var step = cardStep();
+            if (!step) return;
+            scroller.style.scrollBehavior = smooth ? "smooth" : "auto";
+            scroller.scrollLeft = Math.round(i * step);
+        }
+
+        function nearestIndex() {
+            var step = cardStep();
+            if (!step) return 0;
+            return Math.round(scroller.scrollLeft / step);
+        }
+
+        function snapToNearest(smooth) {
+            index = nearestIndex();
+            // Keep index in the first copy when possible (seamless loop).
+            if (index >= n) {
+                index = index % n;
+                scrollToIndex(index + n, false);
+                // Force layout, then settle on the first-copy index without animation.
+                void scroller.scrollLeft;
+                scrollToIndex(index, false);
+                return;
+            }
+            scrollToIndex(index, smooth !== false);
+        }
+
+        function advance() {
+            if (paused()) return;
+            var step = cardStep();
+            if (!step || scroller.scrollWidth <= scroller.clientWidth) return;
+
+            index = nearestIndex();
+            index += 1;
+            scrollToIndex(index, true);
+
+            // After entering the duplicate set, jump back to the matching card in the first set.
+            if (index >= n) {
+                looping = true;
+                window.setTimeout(function () {
+                    index = index - n;
+                    scrollToIndex(index, false);
+                    looping = false;
+                }, 450);
+            }
+        }
+
+        function startAuto() {
+            if (stepTimer) clearInterval(stepTimer);
+            stepTimer = setInterval(advance, VT_STEP_MS);
+        }
+        startAuto();
 
         scroller.addEventListener("mouseenter", function () { state.hover = true; });
         scroller.addEventListener("mouseleave", function () { state.hover = false; });
@@ -98,7 +188,8 @@
         scroller.addEventListener("pointerdown", function (e) {
             isDown = true; dragMoved = false; startX = e.clientX; startScroll = scroller.scrollLeft;
             if (e.pointerType === "mouse") {
-                state.drag = true;  // pause auto-scroll while the button is held
+                state.drag = true;
+                scroller.style.scrollBehavior = "auto";
             } else {
                 state.touchPause = true;
                 if (touchTimer) clearTimeout(touchTimer);
@@ -108,8 +199,6 @@
         window.addEventListener("pointermove", function (e) {
             if (!isDown) return;
             var dx = e.clientX - startX;
-            // Only treat it as a drag once the pointer actually moves, so a plain
-            // click keeps the cards clickable (needed to open the video modal).
             if (Math.abs(dx) > 6 && !dragMoved) {
                 dragMoved = true;
                 if (e.pointerType === "mouse") scroller.classList.add("is-dragging");
@@ -125,12 +214,30 @@
             isDown = false;
             state.drag = false;
             scroller.classList.remove("is-dragging");
+            if (dragMoved) {
+                // Snap to the nearest card after a drag / swipe.
+                snapToNearest(true);
+            }
             if (e && e.pointerType !== "mouse") {
                 touchTimer = setTimeout(function () { state.touchPause = false; }, 2500);
             }
         }
         window.addEventListener("pointerup", endPointer);
         window.addEventListener("pointercancel", endPointer);
+
+        // Keep index in sync if the user scrolls with trackpad / touch native scroll.
+        var scrollSyncTimer = null;
+        scroller.addEventListener("scroll", function () {
+            if (isDown || looping) return;
+            if (scrollSyncTimer) clearTimeout(scrollSyncTimer);
+            scrollSyncTimer = setTimeout(function () {
+                index = nearestIndex() % n;
+            }, 80);
+        });
+
+        window.addEventListener("resize", function () {
+            scrollToIndex(index % n, false);
+        });
 
         function openCard(card) {
             var url = card.getAttribute("data-url");
@@ -190,6 +297,24 @@
         }
     }
 
+    /* ==================== WHATSAPP HELPERS ==================== */
+
+    function openWhatsapp(text) {
+        var url = "https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(text);
+        window.open(url, "_blank");
+    }
+
+    function fieldValue(id) {
+        var el = document.getElementById(id);
+        return el ? el.value.trim() : "";
+    }
+
+    function fileLabel(id, label) {
+        var el = document.getElementById(id);
+        if (!el || !el.files || !el.files.length) return null;
+        return label + " (" + el.files[0].name + ")";
+    }
+
     /* ==================== WHATSAPP REGISTRATION FORM ==================== */
 
     function initWhatsappForm() {
@@ -197,9 +322,9 @@
         if (!form) return;
         form.addEventListener("submit", function (e) {
             e.preventDefault();
-            var get = function (id) { var el = document.getElementById(id); return el ? el.value.trim() : ""; };
-            var name = get("tf-name"), phone = get("tf-phone"), email = get("tf-email"),
-                training = get("tf-training"), msg = get("tf-message");
+            var name = fieldValue("tf-name"), phone = fieldValue("tf-phone"),
+                email = fieldValue("tf-email"), training = fieldValue("tf-training"),
+                msg = fieldValue("tf-message");
 
             var lines = [
                 "Bonjour PROCOPE Afrique, je souhaite m'inscrire à la prochaine formation.",
@@ -211,9 +336,158 @@
             if (training) lines.push("Formation : " + training);
             if (msg) lines.push("Message : " + msg);
 
-            var url = "https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(lines.join("\n"));
-            window.open(url, "_blank");
+            openWhatsapp(lines.join("\n"));
             form.reset();
+        });
+    }
+
+    /* ==================== WHATSAPP CONTACT FORM (homepage) ==================== */
+
+    function initContactForm() {
+        var form = document.getElementById("contact-form");
+        if (!form) return;
+        form.addEventListener("submit", function (e) {
+            e.preventDefault();
+            var name = fieldValue("cf-name");
+            var email = fieldValue("cf-email");
+            var service = fieldValue("cf-service");
+            var msg = fieldValue("cf-message");
+
+            var lines = [
+                "Bonjour PROCOPE Afrique, je souhaite vous contacter.",
+                "",
+                "Nom : " + name,
+                "Email : " + email
+            ];
+            if (service) lines.push("Service : " + service);
+            if (msg) lines.push("Message : " + msg);
+
+            openWhatsapp(lines.join("\n"));
+            form.reset();
+        });
+    }
+
+    /* ==================== WHATSAPP CANDIDATURE FORM ==================== */
+
+    function initCandidatureForm() {
+        var form = document.getElementById("candidature-form");
+        if (!form) return;
+        form.addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            var name = fieldValue("fullName");
+            var email = fieldValue("email");
+            var project = fieldValue("projectName");
+            var description = fieldValue("projectDescription");
+
+            var docs = [
+                fileLabel("cv", "CV"),
+                fileLabel("businessPlan", "Business Plan"),
+                fileLabel("pitchDeck", "Pitch Deck")
+            ].filter(Boolean);
+
+            var lines = [
+                "Bonjour PROCOPE Afrique, je souhaite déposer ma candidature au programme d'incubation.",
+                "",
+                "Nom : " + name,
+                "Email : " + email,
+                "Projet : " + project,
+                "Description : " + description,
+                ""
+            ];
+
+            if (docs.length) {
+                lines.push("Documents à envoyer ensuite :");
+                docs.forEach(function (d) { lines.push("- " + d); });
+                lines.push("");
+                lines.push("(Je joindrai ces fichiers manuellement dans cette conversation.)");
+            } else {
+                lines.push("Documents à envoyer ensuite : CV / Business Plan / Pitch Deck");
+                lines.push("(Je joindrai les pièces dans cette conversation WhatsApp.)");
+            }
+
+            if (docs.length) {
+                window.alert(
+                    "WhatsApp va s'ouvrir avec votre candidature préremplie.\n\n" +
+                    "Les fichiers ne peuvent pas être joints automatiquement : " +
+                    "pensez à les envoyer ensuite dans la conversation WhatsApp."
+                );
+            }
+
+            openWhatsapp(lines.join("\n"));
+            form.reset();
+        });
+    }
+
+    /* ==================== CANDIDATURE PANEL TOGGLE ==================== */
+
+    function initCandidaturePanels() {
+        var slider = document.getElementById("cand-slider");
+        var track = document.getElementById("cand-slider-track");
+        var tabs = document.querySelectorAll("[data-cand-panel]");
+        if (!slider || !track || !tabs.length) return;
+
+        var panels = {
+            formation: document.getElementById("cand-panel-formation"),
+            incubation: document.getElementById("cand-panel-incubation")
+        };
+
+        function syncHeight(panelKey) {
+            var panel = panels[panelKey];
+            if (!panel) return;
+            slider.style.height = panel.offsetHeight + "px";
+        }
+
+        function setPanel(panelKey) {
+            if (!panels[panelKey]) return;
+            slider.setAttribute("data-panel", panelKey);
+
+            tabs.forEach(function (btn) {
+                var active = btn.getAttribute("data-cand-panel") === panelKey;
+                btn.classList.toggle("is-active", active);
+                btn.setAttribute("aria-selected", active ? "true" : "false");
+                btn.setAttribute("tabindex", active ? "0" : "-1");
+            });
+
+            Object.keys(panels).forEach(function (key) {
+                var panel = panels[key];
+                if (!panel) return;
+                var active = key === panelKey;
+                panel.setAttribute("aria-hidden", active ? "false" : "true");
+                if (active) {
+                    panel.removeAttribute("inert");
+                } else {
+                    panel.setAttribute("inert", "");
+                }
+            });
+
+            // Wait a frame so layout settles after inert / content, then animate height.
+            window.requestAnimationFrame(function () {
+                syncHeight(panelKey);
+            });
+        }
+
+        tabs.forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                setPanel(btn.getAttribute("data-cand-panel"));
+            });
+            btn.addEventListener("keydown", function (e) {
+                if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+                e.preventDefault();
+                var keys = ["formation", "incubation"];
+                var cur = slider.getAttribute("data-panel") || "formation";
+                var idx = keys.indexOf(cur);
+                if (e.key === "ArrowRight") idx = (idx + 1) % keys.length;
+                else idx = (idx - 1 + keys.length) % keys.length;
+                setPanel(keys[idx]);
+                var next = document.querySelector('[data-cand-panel="' + keys[idx] + '"]');
+                if (next) next.focus();
+            });
+        });
+
+        setPanel(slider.getAttribute("data-panel") || "formation");
+        window.addEventListener("resize", function () {
+            syncHeight(slider.getAttribute("data-panel") || "formation");
         });
     }
 
@@ -235,6 +509,9 @@
     function init() {
         initVideoStrip();
         initWhatsappForm();
+        initContactForm();
+        initCandidatureForm();
+        initCandidaturePanels();
         initPosters();
     }
 
