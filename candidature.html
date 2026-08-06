@@ -13,10 +13,10 @@
             } catch (e) { document.documentElement.setAttribute('data-theme', 'light'); }
         })();
     </script>
-    <title>Espace Candidature | PROCOPE Afrique</title>
+    <title>Formation &amp; Incubation | Espace Candidature | PROCOPE Afrique</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <meta content="candidature, postuler incubateur, programme d'incubation, appel à projets, financement startup, PROCOPE" name="keywords">
-    <meta content="Rejoignez le programme d'incubation de PROCOPE Afrique : déposez votre candidature en ligne et bénéficiez d'un mentorat, de formations et d'un accès au financement." name="description">
+    <meta content="candidature, formation entrepreneuriat, incubation, postuler incubateur, ESS, création d'entreprise, PROCOPE Afrique" name="keywords">
+    <meta content="Inscrivez-vous à une formation PROCOPE Afrique ou déposez votre candidature d'incubation : mentorat, compétences pratiques, ESS et accès au financement." name="description">
     <meta name="author" content="PROCOPE Afrique">
     <meta name="robots" content="index, follow">
     <meta name="theme-color" content="#06A3DA">
@@ -26,15 +26,15 @@
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="PROCOPE Afrique">
     <meta property="og:locale" content="fr_FR">
-    <meta property="og:title" content="Espace Candidature | PROCOPE Afrique">
-    <meta property="og:description" content="Rejoignez le programme d'incubation de PROCOPE Afrique : déposez votre candidature en ligne et bénéficiez d'un mentorat, de formations et d'un accès au financement.">
+    <meta property="og:title" content="Formation &amp; Incubation | Espace Candidature | PROCOPE Afrique">
+    <meta property="og:description" content="Inscrivez-vous à une formation PROCOPE Afrique ou déposez votre candidature d'incubation : mentorat, compétences pratiques, ESS et accès au financement.">
     <meta property="og:url" content="https://procopeafrique.vercel.app/candidature.html">
     <meta property="og:image" content="https://procopeafrique.vercel.app/img/carousel-1.jpg">
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Espace Candidature | PROCOPE Afrique">
-    <meta name="twitter:description" content="Rejoignez le programme d'incubation de PROCOPE Afrique : déposez votre candidature en ligne et bénéficiez d'un mentorat, de formations et d'un accès au financement.">
+    <meta name="twitter:title" content="Formation &amp; Incubation | Espace Candidature | PROCOPE Afrique">
+    <meta name="twitter:description" content="Inscrivez-vous à une formation PROCOPE Afrique ou déposez votre candidature d'incubation : mentorat, compétences pratiques, ESS et accès au financement.">
     <meta name="twitter:image" content="https://procopeafrique.vercel.app/img/carousel-1.jpg">
 
     <!-- Favicon -->
@@ -166,6 +166,7 @@
             <div class="row py-5">
                 <div class="col-12 pt-lg-5 mt-lg-5 text-center">
                     <h1 class="display-4 text-white animated zoomIn">Espace Candidature</h1>
+                    <p class="text-white mb-0 mt-3">Se former aujourd'hui. Se faire accompagner demain.</p>
                     <a href="index.html" class="h5 text-white">Accueil</a>
                     <i class="far fa-circle text-white px-2"></i>
                     <a href="candidature.html" class="h5 text-white">Espace Candidature</a>
@@ -235,55 +236,160 @@
     </div>
     <!-- About Application End -->
 
-    <!-- Application Form Start -->
+    <!-- Candidature dual panels (Formation / Incubation) Start -->
     <div class="container-fluid py-5 wow fadeInUp" data-wow-delay="0.1s">
         <div class="container py-5">
-            <div class="section-title text-center position-relative pb-3 mb-5 mx-auto" style="max-width: 600px;">
-                <h5 class="fw-bold text-primary text-uppercase">Espace Candidature</h5>
-                <h1 class="mb-0">Rejoignez notre programme d'incubation</h1>
+            <div class="section-title text-center position-relative pb-3 mb-4 mx-auto" style="max-width: 700px;">
+                <h5 class="fw-bold text-primary text-uppercase">Votre prochain pas</h5>
+                <h1 class="mb-3">Deux portes d'entrée. Une même ambition.</h1>
+                <p class="mb-0">Choisissez le parcours qui vous correspond : monter en compétences dès maintenant, ou déposer une candidature pour intégrer notre programme d'incubation.</p>
             </div>
-            <div class="row g-5">
-                <div class="col-lg-8 mx-auto">
-                    <form>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label for="fullName" class="form-label">Nom complet</label>
-                                <input type="text" class="form-control border-0 bg-light px-4" id="fullName" placeholder="Votre Nom et Prénom" style="height: 55px;">
+
+            <div class="cand-toggle-wrap mb-5">
+                <div class="cand-toggle" role="tablist" aria-label="Choisir formation ou incubation">
+                    <button type="button" class="cand-toggle-btn is-active" role="tab" id="cand-tab-formation"
+                        aria-selected="true" aria-controls="cand-panel-formation" data-cand-panel="formation">
+                        <i class="fa fa-graduation-cap me-2" aria-hidden="true"></i>Se faire former
+                    </button>
+                    <button type="button" class="cand-toggle-btn" role="tab" id="cand-tab-incubation"
+                        aria-selected="false" aria-controls="cand-panel-incubation" data-cand-panel="incubation">
+                        <i class="fa fa-rocket me-2" aria-hidden="true"></i>Me faire incuber
+                    </button>
+                </div>
+            </div>
+
+            <div class="cand-slider" id="cand-slider" data-panel="formation">
+                <div class="cand-slider-track" id="cand-slider-track">
+                    <!-- Panel 1: Formation (default) -->
+                    <div class="cand-panel" id="cand-panel-formation" role="tabpanel" aria-labelledby="cand-tab-formation">
+                        <div class="row g-5 align-items-start">
+                            <div class="col-lg-5">
+                                <div class="section-title position-relative pb-3 mb-4">
+                                    <h5 class="fw-bold text-primary text-uppercase">Formations PROCOPE</h5>
+                                    <h2 class="mb-0">Les compétences qui transforment une idée en projet solide</h2>
+                                </div>
+                                <p class="mb-4">Chez PROCOPE Afrique, nos formations ne sont pas des cours théoriques : ce sont des ateliers concrets pour entreprendre avec méthode — création d'entreprise, ESS, pitch, business model, marketing digital et skills pratiques, animés par des experts du terrain.</p>
+                                <div class="row g-0 mb-4">
+                                    <div class="col-sm-6"><h6 class="mb-3"><i class="fa fa-check text-primary me-2"></i>Entrepreneuriat &amp; création d'entreprise</h6></div>
+                                    <div class="col-sm-6"><h6 class="mb-3"><i class="fa fa-check text-primary me-2"></i>Économie sociale &amp; solidaire</h6></div>
+                                    <div class="col-sm-6"><h6 class="mb-3"><i class="fa fa-check text-primary me-2"></i>Pitch, gestion &amp; business model</h6></div>
+                                    <div class="col-sm-6"><h6 class="mb-3"><i class="fa fa-check text-primary me-2"></i>Attestation &amp; réseau d'entrepreneurs</h6></div>
+                                </div>
+                                <div class="cand-cta-block bg-primary rounded p-4 text-white">
+                                    <h5 class="text-white mb-2">Les places partent vite — ne laissez pas passer votre tour</h5>
+                                    <p class="mb-0 small opacity-90">Chaque session est limitée pour garantir un accompagnement de qualité. Inscrivez-vous maintenant : votre demande part directement sur WhatsApp, sans paperasse.</p>
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                <label for="email" class="form-label">Adresse Email</label>
-                                <input type="email" class="form-control border-0 bg-light px-4" id="email" placeholder="Votre Email" style="height: 55px;">
-                            </div>
-                            <div class="col-12">
-                                <label for="projectName" class="form-label">Nom du Projet</label>
-                                <input type="text" class="form-control border-0 bg-light px-4" id="projectName" placeholder="Nom de votre projet" style="height: 55px;">
-                            </div>
-                            <div class="col-12">
-                                <label for="projectDescription" class="form-label">Description du Projet</label>
-                                <textarea class="form-control border-0 bg-light px-4 py-3" rows="5" id="projectDescription" placeholder="Décrivez votre projet en quelques mots"></textarea>
-                            </div>
-                            <div class="col-12">
-                                <label for="cv" class="form-label">Votre CV</label>
-                                <input type="file" class="form-control border-0 bg-light" id="cv">
-                            </div>
-                            <div class="col-12">
-                                <label for="businessPlan" class="form-label">Business Plan</label>
-                                <input type="file" class="form-control border-0 bg-light" id="businessPlan">
-                            </div>
-                            <div class="col-12">
-                                <label for="pitchDeck" class="form-label">Pitch Deck</label>
-                                <input type="file" class="form-control border-0 bg-light" id="pitchDeck">
-                            </div>
-                            <div class="col-12 text-center">
-                                <button class="btn btn-primary w-50 py-3" type="submit">Soumettre la Candidature</button>
+                            <div class="col-lg-7">
+                                <div class="bg-light rounded p-4 p-md-5 h-100">
+                                    <h4 class="mb-4">Inscription formation</h4>
+                                    <form id="training-form" novalidate>
+                                        <div class="row g-3">
+                                            <div class="col-12">
+                                                <label for="tf-name" class="form-label">Nom complet</label>
+                                                <input type="text" id="tf-name" name="tf-name" class="form-control border-0 bg-white px-4" placeholder="Votre Nom et Prénom" required style="height: 55px;" autocomplete="name">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="tf-phone" class="form-label">Téléphone WhatsApp</label>
+                                                <input type="tel" id="tf-phone" name="tf-phone" class="form-control border-0 bg-white px-4" placeholder="Votre numéro WhatsApp" required style="height: 55px;" autocomplete="tel">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="tf-email" class="form-label">Email <span class="text-muted fw-normal">(facultatif)</span></label>
+                                                <input type="email" id="tf-email" name="tf-email" class="form-control border-0 bg-white px-4" placeholder="Votre Email" style="height: 55px;" autocomplete="email">
+                                            </div>
+                                            <div class="col-12">
+                                                <label for="tf-training" class="form-label">Formation souhaitée</label>
+                                                <select id="tf-training" name="tf-training" class="form-select border-0 bg-white px-4" style="height: 55px;" required>
+                                                    <option value="" selected disabled>Choisir une formation</option>
+                                                    <option>Entrepreneuriat &amp; création d'entreprise</option>
+                                                    <option>Économie sociale et solidaire (ESS)</option>
+                                                    <option>Maîtriser l'art du pitch</option>
+                                                    <option>Gestion &amp; business model</option>
+                                                    <option>Marketing digital</option>
+                                                    <option>Compétences pratiques entrepreneuriales</option>
+                                                    <option>Autre / à définir</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-12">
+                                                <label for="tf-message" class="form-label">Message <span class="text-muted fw-normal">(facultatif)</span></label>
+                                                <textarea id="tf-message" name="tf-message" class="form-control border-0 bg-white px-4 py-3" rows="3" placeholder="Précisez vos attentes, votre niveau ou une session particulière…"></textarea>
+                                            </div>
+                                            <div class="col-12">
+                                                <button class="btn btn-success w-100 py-3" type="submit"><i class="fab fa-whatsapp me-2" aria-hidden="true"></i>Réserver ma place via WhatsApp</button>
+                                                <p class="small text-muted mt-3 mb-0 text-center">Une conversation WhatsApp s'ouvre avec votre inscription préremplie. Simple, rapide, sans formulaire interminable.</p>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
                         </div>
-                    </form>
+                    </div>
+
+                    <!-- Panel 2: Incubation -->
+                    <div class="cand-panel" id="cand-panel-incubation" role="tabpanel" aria-labelledby="cand-tab-incubation" inert aria-hidden="true">
+                        <div class="row g-5 align-items-start">
+                            <div class="col-lg-5">
+                                <div class="section-title position-relative pb-3 mb-4">
+                                    <h5 class="fw-bold text-primary text-uppercase">Programme d'incubation</h5>
+                                    <h2 class="mb-0">Donnez à votre projet le cadre pour grandir</h2>
+                                </div>
+                                <p class="mb-4">L'incubation PROCOPE, c'est un accompagnement sur mesure : mentorat, structuration, accès au financement et un réseau d'experts pour passer de l'idée au projet viable — avec un fort impact social et environnemental.</p>
+                                <div class="row g-0 mb-4">
+                                    <div class="col-sm-6"><h6 class="mb-3"><i class="fa fa-check text-primary me-2"></i>Mentorat personnalisé</h6></div>
+                                    <div class="col-sm-6"><h6 class="mb-3"><i class="fa fa-check text-primary me-2"></i>Aide au financement</h6></div>
+                                    <div class="col-sm-6"><h6 class="mb-3"><i class="fa fa-check text-primary me-2"></i>Réseau d'experts</h6></div>
+                                    <div class="col-sm-6"><h6 class="mb-3"><i class="fa fa-check text-primary me-2"></i>Suivi jusqu'au déploiement</h6></div>
+                                </div>
+                                <p class="mb-0 text-muted small">Préparez CV, business plan et pitch deck : après l'envoi WhatsApp, joignez-les dans la conversation.</p>
+                            </div>
+                            <div class="col-lg-7">
+                                <div class="bg-light rounded p-4 p-md-5 h-100">
+                                    <h4 class="mb-4">Candidature incubation</h4>
+                                    <form id="candidature-form">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label for="fullName" class="form-label">Nom complet</label>
+                                                <input type="text" class="form-control border-0 bg-white px-4" id="fullName" name="fullName" placeholder="Votre Nom et Prénom" required style="height: 55px;" autocomplete="name">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="email" class="form-label">Adresse Email</label>
+                                                <input type="email" class="form-control border-0 bg-white px-4" id="email" name="email" placeholder="Votre Email" required style="height: 55px;" autocomplete="email">
+                                            </div>
+                                            <div class="col-12">
+                                                <label for="projectName" class="form-label">Nom du Projet</label>
+                                                <input type="text" class="form-control border-0 bg-white px-4" id="projectName" name="projectName" placeholder="Nom de votre projet" required style="height: 55px;">
+                                            </div>
+                                            <div class="col-12">
+                                                <label for="projectDescription" class="form-label">Description du Projet</label>
+                                                <textarea class="form-control border-0 bg-white px-4 py-3" rows="5" id="projectDescription" name="projectDescription" placeholder="Décrivez votre projet, son impact et où vous en êtes" required></textarea>
+                                            </div>
+                                            <div class="col-12">
+                                                <label for="cv" class="form-label">Votre CV</label>
+                                                <input type="file" class="form-control border-0 bg-white" id="cv" name="cv" accept=".pdf,.doc,.docx,image/*">
+                                            </div>
+                                            <div class="col-12">
+                                                <label for="businessPlan" class="form-label">Business Plan</label>
+                                                <input type="file" class="form-control border-0 bg-white" id="businessPlan" name="businessPlan" accept=".pdf,.doc,.docx,image/*">
+                                            </div>
+                                            <div class="col-12">
+                                                <label for="pitchDeck" class="form-label">Pitch Deck</label>
+                                                <input type="file" class="form-control border-0 bg-white" id="pitchDeck" name="pitchDeck" accept=".pdf,.doc,.docx,image/*,.ppt,.pptx">
+                                            </div>
+                                            <div class="col-12">
+                                                <button class="btn btn-primary w-100 py-3" type="submit"><i class="fab fa-whatsapp me-2" aria-hidden="true"></i>Soumettre ma candidature via WhatsApp</button>
+                                                <p class="small text-muted mt-3 mb-0 text-center">Les pièces jointes ne passent pas automatiquement : envoyez-les ensuite dans la conversation WhatsApp.</p>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <!-- Application Form End -->
+    <!-- Candidature dual panels End -->
 
 
     <!-- Slogan Start -->
@@ -388,6 +494,7 @@
 
     <!-- Template Javascript -->
     <script src="js/main.js"></script>
+    <script src="js/procope.js"></script>
 </body>
 
 </html>
