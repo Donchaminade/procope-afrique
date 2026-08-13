@@ -1,0 +1,3 @@
+# Aucune lecture directe : les CV sont servis via /admin/emplois/candidatures/{id}/cv
+Require all denied
+php_flag engine off
