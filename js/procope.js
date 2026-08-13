@@ -4,7 +4,8 @@
  *     pause on hover, drag / swipe with snap, click to play in a pop-up,
  *     first-visit "swipe" tutorial, and a "see more on TikTok" link.
  *   - Registration form that opens a pre-filled WhatsApp message.
- *   - Homepage contact form that opens a pre-filled WhatsApp message.
+ *   - Contact form (index.html + contact.html) posted to the PROCOPE API
+ *     (/api/contacts) with an inline confirmation, WhatsApp as fallback.
  *   - Candidature form that opens a pre-filled WhatsApp message
  *     (attachments must be sent manually in the chat — wa.me cannot attach files).
  *   - Candidature page dual panels (formation / incubation) with slide toggle.
@@ -20,6 +21,11 @@
     // WhatsApp number in international format, digits only (no +, no spaces).
     // Togo +228 96 45 76 95  ->  22896457695
     var WHATSAPP_NUMBER = "22896457695";
+
+    // PROCOPE API base URL, centralized in js/api-config.js
+    // (window.PROCOPE_API_BASE), included before this script.
+    // Local fallback in case the config script is missing.
+    var API_BASE = window.PROCOPE_API_BASE || "http://127.0.0.1:8088";
 
     // Public TikTok profile (the "Voir plus sur TikTok" button).
     var TIKTOK_PROFILE = "https://www.tiktok.com/@procope.afrique";
@@ -315,55 +321,83 @@
         return label + " (" + el.files[0].name + ")";
     }
 
-    /* ==================== WHATSAPP REGISTRATION FORM ==================== */
-
-    function initWhatsappForm() {
-        var form = document.getElementById("training-form");
-        if (!form) return;
-        form.addEventListener("submit", function (e) {
-            e.preventDefault();
-            var name = fieldValue("tf-name"), phone = fieldValue("tf-phone"),
-                email = fieldValue("tf-email"), training = fieldValue("tf-training"),
-                msg = fieldValue("tf-message");
-
-            var lines = [
-                "Bonjour PROCOPE Afrique, je souhaite m'inscrire à la prochaine formation.",
-                "",
-                "Nom : " + name,
-                "Téléphone : " + phone
-            ];
-            if (email) lines.push("Email : " + email);
-            if (training) lines.push("Formation : " + training);
-            if (msg) lines.push("Message : " + msg);
-
-            openWhatsapp(lines.join("\n"));
-            form.reset();
-        });
-    }
-
-    /* ==================== WHATSAPP CONTACT FORM (homepage) ==================== */
+    /* ==================== CONTACT FORM -> PROCOPE API ==================== */
+    /* index.html + contact.html: POST to /api/contacts, inline feedback,
+       WhatsApp only as a fallback link when the API is unreachable. */
 
     function initContactForm() {
         var form = document.getElementById("contact-form");
         if (!form) return;
+
+        var submitBtn = form.querySelector('button[type="submit"]');
+        var submitHtml = submitBtn ? submitBtn.innerHTML : "";
+
+        // Inline feedback zone (no alert()), inserted right after the form.
+        var feedback = document.createElement("div");
+        feedback.id = "cf-feedback";
+        feedback.setAttribute("role", "status");
+        feedback.setAttribute("aria-live", "polite");
+        feedback.style.display = "none";
+        form.appendChild(feedback);
+
+        function showFeedback(type, html) {
+            feedback.className = "alert alert-" + type + " mt-3 mb-0 w-100";
+            feedback.innerHTML = html;
+            feedback.style.display = "block";
+        }
+
+        function setSending(sending) {
+            if (!submitBtn) return;
+            submitBtn.disabled = sending;
+            submitBtn.innerHTML = sending
+                ? '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Envoi en cours…'
+                : submitHtml;
+        }
+
         form.addEventListener("submit", function (e) {
             e.preventDefault();
-            var name = fieldValue("cf-name");
-            var email = fieldValue("cf-email");
-            var service = fieldValue("cf-service");
-            var msg = fieldValue("cf-message");
+            feedback.style.display = "none";
 
-            var lines = [
-                "Bonjour PROCOPE Afrique, je souhaite vous contacter.",
-                "",
-                "Nom : " + name,
-                "Email : " + email
-            ];
-            if (service) lines.push("Service : " + service);
-            if (msg) lines.push("Message : " + msg);
+            var data = new FormData();
+            data.append("name", fieldValue("cf-name"));
+            data.append("email", fieldValue("cf-email"));
+            data.append("subject", fieldValue("cf-service"));
+            data.append("message", fieldValue("cf-message"));
 
-            openWhatsapp(lines.join("\n"));
-            form.reset();
+            setSending(true);
+
+            fetch(API_BASE + "/api/contacts", { method: "POST", body: data })
+                .then(function (response) {
+                    return response.json().then(function (json) {
+                        return { status: response.status, json: json };
+                    });
+                })
+                .then(function (result) {
+                    if (result.json && result.json.ok) {
+                        form.reset();
+                        showFeedback("success",
+                            '<i class="fa fa-check-circle me-2" aria-hidden="true"></i>' +
+                            esc(result.json.message || "Votre message a bien été envoyé. Nous vous répondrons rapidement."));
+                        return;
+                    }
+                    var message = (result.json && result.json.error) || "Une erreur est survenue. Réessayez.";
+                    if (result.json && result.json.fields) {
+                        message += " " + Object.keys(result.json.fields).map(function (key) {
+                            return result.json.fields[key];
+                        }).join(" ");
+                    }
+                    showFeedback("danger", esc(message));
+                })
+                .catch(function () {
+                    // API unreachable: offer the WhatsApp fallback.
+                    showFeedback("danger",
+                        "Impossible d'envoyer votre message pour le moment. " +
+                        'Vous pouvez nous écrire directement sur <a href="https://wa.me/' + WHATSAPP_NUMBER +
+                        '" target="_blank" rel="noopener" class="alert-link">WhatsApp</a>.');
+                })
+                .finally(function () {
+                    setSending(false);
+                });
         });
     }
 
@@ -554,7 +588,6 @@
 
     function init() {
         initVideoStrip();
-        initWhatsappForm();
         initContactForm();
         initCandidatureForm();
         initPartenaireForm();

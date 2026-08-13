@@ -1,0 +1,44 @@
+<?php
+/**
+ * Annonce d'une nouvelle offre d'emploi (diffusion à toute la communauté).
+ * Variables : $offer (array), $cta_url (string), $affiche_url (string|null)
+ */
+$description = trim((string) ($offer['description'] ?? ''));
+$extrait = mb_strlen($description) > 220 ? rtrim(mb_substr($description, 0, 220)) . '…' : $description;
+ob_start();
+?>
+<h2 style="margin:0 0 16px;color:#062a4d;">Nouvelle offre d'emploi chez PROCOPE !</h2>
+<p>Bonjour,</p>
+<p>PROCOPE Afrique recrute : une nouvelle opportunité vient d'être publiée.</p>
+<p style="font-size:18px;font-weight:bold;color:#062a4d;margin:16px 0;"><?= e($offer['title']) ?></p>
+<?php if (!empty($affiche_url)): ?>
+<p style="margin:16px 0;">
+    <img src="<?= e($affiche_url) ?>" alt="Affiche — <?= e($offer['title']) ?>"
+         width="536" style="width:100%;max-width:536px;height:auto;border-radius:8px;display:block;">
+</p>
+<?php endif; ?>
+<?php if ($extrait !== ''): ?>
+<p><?= nl2br(e($extrait)) ?></p>
+<?php endif; ?>
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:12px 0;">
+    <tr><td style="padding:4px 0;"><strong>Type de contrat :</strong> <?= e($offer['contract_type']) ?></td></tr>
+    <tr><td style="padding:4px 0;"><strong>Lieu :</strong> <?= e(($offer['location'] ?? '') ?: 'Lomé, Togo') ?></td></tr>
+    <tr><td style="padding:4px 0;"><strong>Clôture des candidatures :</strong>
+        <?= e(date('d/m/Y à H\hi', strtotime((string) $offer['closes_at']))) ?></td></tr>
+</table>
+<table role="presentation" cellpadding="0" cellspacing="0" align="center" style="margin:28px auto;">
+    <tr>
+        <td align="center" style="border-radius:10px;background:#f5a623;">
+            <a href="<?= e($cta_url) ?>"
+               style="display:inline-block;padding:16px 44px;font-size:18px;font-weight:bold;color:#062a4d;
+                      text-decoration:none;border-radius:10px;">
+                Voir l'offre et postuler
+            </a>
+        </td>
+    </tr>
+</table>
+<p>N'attendez pas la date limite : les candidatures sont étudiées au fil de l'eau.</p>
+<p>À très bientôt,<br><strong>L'équipe PROCOPE Afrique</strong></p>
+<?php
+$body_html = ob_get_clean();
+require __DIR__ . '/_base.php';

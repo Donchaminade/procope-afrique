@@ -1,0 +1,13 @@
+/vendor/
+/.env
+/storage/proofs/*
+!/storage/proofs/.htaccess
+!/storage/proofs/index.html
+/storage/logs/*
+!/storage/logs/.gitkeep
+/storage/cv/*
+!/storage/cv/.htaccess
+!/storage/cv/index.html
+/public/uploads/*
+!/public/uploads/.gitkeep
+composer.lock

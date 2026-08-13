@@ -124,6 +124,18 @@ h6,
 
 
 /*** Navbar ***/
+.navbar-brand img {
+    max-height: 56px !important;
+    width: auto;
+    height: auto;
+}
+
+.navbar-actions {
+    margin-left: auto;
+    gap: .15rem;
+    flex-shrink: 0;
+}
+
 .navbar-dark .navbar-nav .nav-link {
     font-family: 'Nunito', sans-serif;
     position: relative;
@@ -184,17 +196,26 @@ h6,
     border-color: var(--primary) !important;
 }
 
-@media (max-width: 991.98px) {
+/* Collapsed menu until xl — trop d'items pour expand-lg (992px) */
+@media (max-width: 1199.98px) {
+    .navbar-dark,
     .sticky-top.navbar-dark {
         position: relative;
         background: #FFFFFF;
+    }
+
+    .navbar-dark .navbar-collapse {
+        flex-basis: 100%;
+        margin-top: .5rem;
     }
 
     .navbar-dark .navbar-nav .nav-link,
     .navbar-dark .navbar-nav .nav-link.show,
     .sticky-top.navbar-dark .navbar-nav .nav-link {
         padding: 10px 0;
+        margin-left: 0;
         color: var(--dark);
+        font-size: 1rem;
     }
 
     .navbar-dark .navbar-nav .nav-item.dropdown {
@@ -212,7 +233,21 @@ h6,
     }
 }
 
-@media (min-width: 992px) {
+@media (min-width: 1200px) {
+    .navbar-brand img {
+        max-height: 80px !important;
+    }
+
+    .navbar-actions {
+        order: 3;
+        margin-left: .75rem;
+    }
+
+    .navbar-dark .navbar-collapse {
+        order: 2;
+        flex-grow: 1;
+    }
+
     .navbar-dark {
         position: absolute;
         width: 100%;
@@ -221,10 +256,25 @@ h6,
         border-bottom: 1px solid rgba(256, 256, 256, .1);
         z-index: 999;
     }
-    
+
     .sticky-top.navbar-dark {
         position: fixed;
         background: #FFFFFF;
+    }
+
+    .navbar-dark .navbar-nav .nav-link {
+        margin-left: 16px;
+        font-size: 15.5px;
+        padding: 32px 0;
+        white-space: nowrap;
+    }
+
+    .navbar-dark .navbar-nav .nav-item.dropdown {
+        margin-left: 16px;
+    }
+
+    .sticky-top.navbar-dark .navbar-nav .nav-link {
+        padding: 20px 0;
     }
 
     .navbar-dark .navbar-nav .nav-link::before {
@@ -285,11 +335,11 @@ h6,
 }
 
 /*
- * Mobile/tablet: image aspect ratio makes the slide shorter than the caption
- * (title + CTAs + flag grid). Bootstrap .carousel-item overflows hidden, so
- * raise min-height and cover the photo instead of cropping the text/flags.
+ * Mobile/tablet (< xl): navbar is in normal flow (expand-xl), and the image
+ * aspect ratio can make the slide shorter than the caption (title + CTAs +
+ * flags). Raise min-height and cover the photo instead of cropping content.
  */
-@media (max-width: 991.98px) {
+@media (max-width: 1199.98px) {
     #header-carousel .carousel-item {
         min-height: max(32rem, calc(100svh - 5.5rem));
     }
@@ -304,7 +354,6 @@ h6,
     }
 
     .carousel-caption {
-        /* Navbar is in normal flow on <lg — no need for large top inset */
         padding-top: 1.5rem;
         padding-bottom: 1.75rem;
     }
@@ -901,7 +950,8 @@ html[data-theme="dark"] .navbar-dark .dropdown-item.active {
     color: var(--primary);
 }
 
-@media (max-width: 991.98px) {
+@media (max-width: 1199.98px) {
+    html[data-theme="dark"] .navbar-dark,
     html[data-theme="dark"] .sticky-top.navbar-dark {
         background: #0a1526;
     }
@@ -1447,18 +1497,62 @@ html[data-theme="dark"] .flags-marquee .flag-item {
     object-fit: cover;
 }
 
+/* Mobile: stack vertical (libellés longs lisibles, pas de débordement) */
 @media (max-width: 575.98px) {
-    .cand-toggle {
-        border-radius: 18px;
+    .cand-toggle-wrap {
         width: 100%;
     }
 
+    .cand-toggle {
+        display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        align-items: stretch;
+        width: 100%;
+        border-radius: 16px;
+        gap: .3rem;
+    }
+
     .cand-toggle-btn {
-        flex: 1 1 calc(50% - .35rem);
-        text-align: center;
+        width: 100%;
+        text-align: left;
         white-space: normal;
-        font-size: .85rem;
-        padding: .7rem .85rem;
+        font-size: .9rem;
+        padding: .8rem 1rem;
+        border-radius: 12px;
+    }
+}
+
+/* Tablette: scroll horizontal avec snap (évite wrap 2×2 serré) */
+@media (min-width: 576px) and (max-width: 991.98px) {
+    .cand-toggle-wrap {
+        width: 100%;
+        justify-content: flex-start;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+        padding-bottom: .15rem;
+    }
+
+    .cand-toggle-wrap::-webkit-scrollbar {
+        display: none;
+    }
+
+    .cand-toggle {
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        width: max-content;
+        max-width: none;
+        border-radius: 999px;
+    }
+
+    .cand-toggle-btn {
+        flex: 0 0 auto;
+        scroll-snap-align: start;
+        white-space: nowrap;
+        font-size: .9rem;
+        padding: .7rem 1rem;
     }
 }
 
@@ -1483,4 +1577,436 @@ html[data-theme="dark"] .cand-toggle-btn.is-active {
 
 html[data-theme="dark"] .news-card {
     background: #122038 !important;
+}
+
+
+/*** Responsive global (mobile-first polish) ***/
+html {
+    overflow-x: hidden;
+}
+
+body {
+    overflow-x: hidden;
+    max-width: 100%;
+}
+
+img,
+svg,
+video {
+    max-width: 100%;
+}
+
+/* Cover / absolute images keep their layout height */
+.position-absolute.w-100.h-100,
+.team-img img,
+.blog-img img,
+.service-card-img img,
+.objectif-card-img img,
+.poster-item img,
+.news-card img,
+.carousel-item > img {
+    max-width: none;
+}
+
+iframe {
+    max-width: 100%;
+}
+
+table {
+    max-width: 100%;
+}
+
+.pc-split-media {
+    min-height: 500px;
+}
+
+.pc-split-media--sm {
+    min-height: 350px;
+}
+
+.pc-map {
+    min-height: 280px;
+}
+
+.pc-map iframe {
+    display: block;
+    width: 100% !important;
+    max-width: 100%;
+    min-height: 280px;
+    border: 0;
+}
+
+/* Typography: Bootstrap display-* trop grands sur petits écrans */
+.display-1 {
+    font-size: clamp(2rem, 7vw, 5.5rem);
+}
+
+.display-2 {
+    font-size: clamp(1.85rem, 6vw, 4.5rem);
+}
+
+.display-3 {
+    font-size: clamp(1.7rem, 5.2vw, 3.75rem);
+}
+
+.display-4 {
+    font-size: clamp(1.55rem, 4.5vw, 3rem);
+}
+
+.display-5 {
+    font-size: clamp(1.4rem, 3.8vw, 2.5rem);
+}
+
+.display-6 {
+    font-size: clamp(1.25rem, 3.2vw, 2rem);
+}
+
+.section-title h1,
+.bg-header h1 {
+    font-size: clamp(1.45rem, 4.2vw, 2.5rem);
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+}
+
+.team-item h4 {
+    font-size: clamp(1rem, 2.5vw, 1.35rem);
+    line-height: 1.3;
+}
+
+.team-item .text-center p {
+    overflow-wrap: anywhere;
+}
+
+.news-card {
+    overflow: hidden;
+}
+
+.news-card img {
+    width: 100%;
+    max-height: 220px;
+    object-fit: cover;
+}
+
+.facts .shadow h5 {
+    font-size: clamp(.85rem, 2.4vw, 1.05rem);
+    line-height: 1.3;
+}
+
+.facts .shadow h1 {
+    font-size: clamp(1.5rem, 4vw, 2.25rem);
+}
+
+/* Contact: emails / longs libellés */
+.ps-4 h4,
+.ps-4 h4 a {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    font-size: clamp(1rem, 2.8vw, 1.35rem);
+    line-height: 1.35;
+}
+
+@media (max-width: 991.98px) {
+    .pc-split-media {
+        min-height: 280px;
+        margin-top: .5rem;
+    }
+
+    .pc-split-media--sm {
+        min-height: 240px;
+    }
+
+    .bg-header {
+        margin-bottom: 2.5rem !important;
+        padding-top: 2.5rem !important;
+        padding-bottom: 2.5rem !important;
+    }
+
+    .container-fluid.bg-header[style*="margin-top"] {
+        margin-top: 2.5rem !important;
+    }
+
+    .facts .shadow {
+        height: auto !important;
+        min-height: 110px;
+        padding: 1.1rem !important;
+        margin-bottom: .75rem;
+    }
+
+    .service-item {
+        height: auto;
+        min-height: 260px;
+        padding: 1.5rem 1.25rem 2.5rem;
+    }
+
+    .service-item a.btn {
+        opacity: 1;
+        bottom: -20px;
+    }
+
+    .footer-about {
+        margin-bottom: 0;
+    }
+
+    .back-to-top {
+        right: 18px;
+        bottom: 18px;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .container-fluid.py-5 {
+        padding-top: 2.25rem !important;
+        padding-bottom: 2.25rem !important;
+    }
+
+    .container.py-5 {
+        padding-top: 1.5rem !important;
+        padding-bottom: 1.5rem !important;
+    }
+
+    .row.g-5 {
+        --bs-gutter-y: 1.75rem;
+    }
+
+    .bg-light.rounded.p-4.p-md-5,
+    .cand-panel .bg-light.rounded {
+        padding: 1.25rem !important;
+    }
+
+    .objectif-card-img {
+        height: 160px;
+    }
+
+    .service-card-img {
+        height: 180px;
+    }
+
+    .news-card img {
+        height: 180px;
+        max-height: 180px;
+    }
+
+    .team-item .team-social a.btn {
+        margin: 0 2px;
+    }
+
+    /* Footer copyright bar */
+    .container.text-center .d-flex[style*="height: 75px"] {
+        height: auto !important;
+        min-height: 64px;
+        padding: .75rem 0;
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .pc-split-media,
+    .pc-split-media--sm {
+        min-height: 220px;
+    }
+
+    .pc-map iframe {
+        min-height: 240px !important;
+        height: 240px !important;
+    }
+
+    .section-title::before {
+        width: 110px;
+    }
+
+    .section-title.text-center::before {
+        margin-left: -55px;
+    }
+
+    .btn.py-md-3.px-md-5 {
+        padding: .65rem 1.25rem;
+    }
+
+    .hero-content .btn {
+        max-width: 100%;
+    }
+}
+
+/* Dark mode: navbar tools stay readable on collapsed solid bar */
+@media (max-width: 1199.98px) {
+    html[data-theme="dark"] .navbar-actions .theme-toggle {
+        color: var(--primary);
+    }
+}
+
+
+/* Hero formation notice */
+/*
+ * Pilule "nouvelle formation" injectée par js/hero-formation.js dans
+ * #header-carousel (enfant direct, hors des .carousel-item) : un seul
+ * élément superposé à toutes les slides. z-index 15 = au-dessus des
+ * captions (z-index 1) et des contrôles, sous la navbar desktop (999).
+ */
+.hero-formation-notice {
+    position: absolute;
+    top: 7.5rem; /* desktop : sous la navbar absolue (~90px), au-dessus du titre centré */
+    left: 50%;
+    z-index: 15;
+    display: inline-flex;
+    align-items: center;
+    gap: .6rem;
+    max-width: min(calc(100% - 7rem), 720px);
+    padding: .55rem 1.25rem .55rem 1rem;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #ff9d2f 0%, #ff6a2b 55%, #ff5e3a 100%);
+    border: 1px solid rgba(255, 255, 255, .38);
+    color: #fff;
+    font-size: .95rem;
+    line-height: 1.25;
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    box-shadow: 0 10px 28px rgba(255, 94, 58, .38), 0 2px 8px rgba(9, 30, 62, .3);
+    opacity: 0;
+    transform: translate(-50%, -14px);
+    transition: opacity .55s ease, transform .55s ease, box-shadow .3s ease;
+}
+
+.hero-formation-notice.hfn-visible {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+.hero-formation-notice:hover,
+.hero-formation-notice:focus-visible {
+    color: #fff;
+    transform: translate(-50%, -3px);
+    box-shadow: 0 16px 34px rgba(255, 94, 58, .48), 0 4px 12px rgba(9, 30, 62, .35);
+}
+
+/* Effet shine : bande lumineuse qui traverse la pilule périodiquement */
+.hero-formation-notice::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -70%;
+    width: 45%;
+    height: 100%;
+    background: linear-gradient(105deg, transparent 0%, rgba(255, 255, 255, .32) 50%, transparent 100%);
+    animation: hfn-shine 4.2s ease-in-out 1.2s infinite;
+    pointer-events: none;
+}
+
+@keyframes hfn-shine {
+    0% { left: -70%; }
+    38% { left: 120%; }
+    100% { left: 120%; }
+}
+
+/* Point lumineux animé (pulse) */
+.hero-formation-notice .hfn-dot {
+    flex: 0 0 auto;
+    width: .55rem;
+    height: .55rem;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, .65);
+    animation: hfn-pulse 1.8s ease-out infinite;
+}
+
+@keyframes hfn-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, .65); }
+    70% { box-shadow: 0 0 0 .55rem rgba(255, 255, 255, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+}
+
+.hero-formation-notice .hfn-icon {
+    flex: 0 0 auto;
+    font-size: .9em;
+}
+
+.hero-formation-notice .hfn-lead {
+    flex: 0 0 auto;
+    font-weight: 700;
+    letter-spacing: .01em;
+}
+
+.hero-formation-notice .hfn-lead-extra {
+    font-weight: 500;
+    opacity: .92;
+}
+
+.hero-formation-notice .hfn-title {
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 34ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-left: .6rem;
+    border-left: 1px solid rgba(255, 255, 255, .45);
+    font-weight: 500;
+}
+
+.hero-formation-notice .hfn-chevron {
+    flex: 0 0 auto;
+    font-size: .72em;
+    opacity: .95;
+    transition: transform .25s ease;
+}
+
+.hero-formation-notice:hover .hfn-chevron {
+    transform: translateX(3px);
+}
+
+/* < xl : la navbar est dans le flux, le hero commence en haut du carrousel */
+@media (max-width: 1199.98px) {
+    .hero-formation-notice {
+        top: 1.5rem;
+        max-width: calc(100% - 5.5rem);
+    }
+}
+
+/* Mobile : pilule raccourcie, jamais de débordement */
+@media (max-width: 576px) {
+    .hero-formation-notice {
+        top: 1rem;
+        gap: .45rem;
+        max-width: calc(100% - 2.5rem);
+        padding: .45rem .95rem .45rem .8rem;
+        font-size: .8rem;
+    }
+
+    .hero-formation-notice .hfn-lead-extra {
+        display: none;
+    }
+
+    .hero-formation-notice .hfn-title {
+        max-width: 42vw;
+        padding-left: .45rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hero-formation-notice,
+    .hero-formation-notice .hfn-dot,
+    .hero-formation-notice .hfn-chevron {
+        animation: none;
+        transition: none;
+    }
+
+    .hero-formation-notice::after {
+        display: none;
+    }
+
+    .hero-formation-notice {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+/* Dark mode : dégradé légèrement plus profond, ombre renforcée */
+html[data-theme="dark"] .hero-formation-notice {
+    background: linear-gradient(135deg, #ff8a1e 0%, #f55a24 55%, #e84e2c 100%);
+    border-color: rgba(255, 255, 255, .28);
+    box-shadow: 0 10px 28px rgba(232, 78, 44, .42), 0 2px 10px rgba(0, 0, 0, .5);
+}
+
+html[data-theme="dark"] .hero-formation-notice:hover,
+html[data-theme="dark"] .hero-formation-notice:focus-visible {
+    box-shadow: 0 16px 34px rgba(232, 78, 44, .5), 0 4px 14px rgba(0, 0, 0, .55);
 }
