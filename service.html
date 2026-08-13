@@ -134,13 +134,16 @@
 
     <!-- Navbar Start -->
     <div class="container-fluid position-relative p-0">
-        <nav class="navbar navbar-expand-lg navbar-dark px-5 py-3 py-lg-0">
+        <nav class="navbar navbar-expand-xl navbar-dark px-3 px-md-4 px-xl-5 py-3 py-lg-0">
             <a href="index.html" class="navbar-brand p-0">
-                <img src="img/logo.png" alt="PROCOPE" style="max-height: 80px;">
+                <img src="img/logo.png" alt="PROCOPE">
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
-                <span class="fa fa-bars"></span>
-            </button>
+            <div class="navbar-actions d-flex align-items-center">
+                <button type="button" id="theme-toggle" class="btn theme-toggle" aria-label="Basculer entre le mode clair et sombre" title="Mode clair / sombre"><i class="bi bi-moon-stars-fill icon-to-dark"></i><i class="bi bi-sun-fill icon-to-light"></i></button>
+                <button class="navbar-toggler ms-1" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Menu">
+                    <span class="fa fa-bars"></span>
+                </button>
+            </div>
             <div class="collapse navbar-collapse" id="navbarCollapse">
                 <div class="navbar-nav ms-auto py-0">
                     <a href="index.html" class="nav-item nav-link">Accueil</a>
@@ -154,11 +157,10 @@
                         <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Plus</a>
                         <div class="dropdown-menu m-0">
                             <a href="partenaires.html" class="dropdown-item">Investisseurs & Partenaires</a>
+                            <a href="offres-emploi.html" class="dropdown-item">Offres d'emploi</a>
                         </div>
                     </div>
                 </div>
-                <button type="button" id="theme-toggle" class="btn theme-toggle ms-3" aria-label="Basculer entre le mode clair et sombre" title="Mode clair / sombre"><i class="bi bi-moon-stars-fill icon-to-dark"></i><i class="bi bi-sun-fill icon-to-light"></i></button>
-                <button type="button" class="btn text-primary ms-3" data-bs-toggle="modal" data-bs-target="#searchModal"><i class="fa fa-search"></i></button>
             </div>
         </nav>
 
@@ -171,25 +173,6 @@
         </div>
     </div>
     <!-- Navbar End -->
-
-
-    <!-- Full Screen Search Start -->
-    <div class="modal fade" id="searchModal" tabindex="-1">
-        <div class="modal-dialog modal-fullscreen">
-            <div class="modal-content" style="background: rgba(9, 30, 62, .7);">
-                <div class="modal-header border-0">
-                    <button type="button" class="btn bg-white btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body d-flex align-items-center justify-content-center">
-                    <div class="input-group" style="max-width: 600px;">
-                        <input type="text" class="form-control bg-transparent border-primary p-3" placeholder="Type search keyword">
-                        <button class="btn btn-primary px-4"><i class="bi bi-search"></i></button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Full Screen Search End -->
 
 
     <!-- Service Start -->
@@ -483,6 +466,7 @@
 
     <!-- Template Javascript -->
     <script src="js/main.js"></script>
+    <script src="js/api-config.js"></script>
     <script src="js/procope.js"></script>
 </body>
 

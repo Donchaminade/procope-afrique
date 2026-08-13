@@ -1,0 +1,201 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    html {
+        @apply antialiased;
+    }
+    body {
+        @apply bg-slate-100 font-sans text-slate-800;
+    }
+    /* Scrollbar discrète */
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+        @apply rounded-full bg-slate-300;
+        border: 2px solid transparent;
+        background-clip: content-box;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        @apply bg-slate-400;
+    }
+}
+
+@layer components {
+    /* Cartes */
+    .card {
+        @apply rounded-2xl bg-white p-6 shadow-soft ring-1 ring-slate-200/70;
+    }
+    .card-title {
+        @apply mb-4 flex items-center gap-2.5 text-base font-semibold text-brand-navy;
+    }
+    .card-title-icon {
+        @apply inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-navy/5 text-brand-navy2;
+    }
+
+    /* Champs de formulaire */
+    .label {
+        @apply mb-1.5 block text-sm font-medium text-slate-700;
+    }
+    .hint {
+        @apply text-xs font-normal text-slate-400;
+    }
+    .input {
+        @apply block w-full rounded-xl border-0 bg-white px-3.5 py-2.5 text-sm text-slate-800 shadow-sm ring-1 ring-inset ring-slate-300 transition placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-blue;
+    }
+    .input-icon-wrap {
+        @apply relative;
+    }
+    .input-icon-wrap > svg {
+        @apply pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400;
+    }
+    .input-icon-wrap > .input {
+        @apply pl-11;
+    }
+    .checkbox {
+        @apply h-4 w-4 rounded border-slate-300 text-brand-orange focus:ring-brand-orange;
+    }
+
+    .radio {
+        @apply h-4 w-4 border-slate-300 text-brand-orange focus:ring-brand-orange;
+    }
+
+    /* Boutons */
+    .btn-primary {
+        @apply inline-flex items-center justify-center gap-2 rounded-xl bg-brand-orange px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-px hover:bg-amber-500 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange;
+    }
+    .btn-secondary {
+        @apply inline-flex items-center justify-center gap-2 rounded-xl bg-brand-navy px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-px hover:bg-brand-navy2 hover:shadow-md;
+    }
+    .btn-ghost {
+        @apply inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 shadow-sm ring-1 ring-inset ring-slate-300 transition hover:bg-slate-50 hover:text-brand-navy;
+    }
+    .btn-danger {
+        @apply inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-red-600 shadow-sm ring-1 ring-inset ring-red-200 transition hover:bg-red-50;
+    }
+    .btn-sm {
+        @apply px-3 py-1.5 text-xs;
+    }
+    .btn-icon {
+        @apply inline-flex h-8 w-8 items-center justify-center rounded-lg bg-white text-slate-500 ring-1 ring-inset ring-slate-200 transition hover:bg-brand-navy hover:text-white hover:ring-brand-navy;
+    }
+    .btn-icon-danger {
+        @apply inline-flex h-8 w-8 items-center justify-center rounded-lg bg-white text-red-500 ring-1 ring-inset ring-red-200 transition hover:bg-red-600 hover:text-white hover:ring-red-600;
+    }
+
+    /* Onglets (pills) */
+    .tab-btn {
+        @apply inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-slate-500 transition hover:text-brand-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-blue;
+    }
+    .tab-btn-active {
+        @apply bg-white text-brand-navy shadow-sm;
+    }
+    .tab-count {
+        @apply inline-flex h-5 min-w-[1.5rem] items-center justify-center rounded-full bg-slate-300/60 px-1.5 text-[11px] font-bold text-slate-500;
+    }
+    .tab-btn-active .tab-count {
+        @apply bg-brand-orange/15 text-brand-orange;
+    }
+
+    /* Badges */
+    .badge {
+        @apply inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset;
+    }
+
+    /* Tableaux */
+    .table-wrap {
+        @apply -mx-6 overflow-x-auto px-6;
+    }
+    .table {
+        @apply w-full border-collapse text-left;
+    }
+    .table thead th {
+        @apply border-b border-slate-200 px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-400;
+    }
+    .table tbody td {
+        @apply border-b border-slate-100 px-4 py-3.5 align-middle text-sm text-slate-700;
+    }
+    .table tbody tr {
+        @apply transition-colors hover:bg-slate-50/80;
+    }
+    .table tbody tr:last-child td {
+        @apply border-b-0;
+    }
+
+    /* Navigation sidebar */
+    .nav-link {
+        @apply relative flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-300 transition hover:bg-white/5 hover:text-white;
+    }
+    .nav-link-active {
+        @apply bg-white/10 text-white;
+    }
+    .nav-link-active::before {
+        content: '';
+        @apply absolute -left-3 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-brand-orange;
+    }
+
+    /* Pagination */
+    .page-btn {
+        @apply inline-flex h-9 min-w-[2.25rem] items-center justify-center rounded-lg px-2 text-sm font-medium text-slate-600 ring-1 ring-inset ring-slate-200 transition hover:bg-slate-100 hover:text-brand-navy;
+    }
+    .page-btn-active {
+        @apply bg-brand-navy text-white ring-brand-navy hover:bg-brand-navy hover:text-white;
+    }
+    .page-btn-disabled {
+        @apply pointer-events-none opacity-40;
+    }
+
+    /* Avatar initiales */
+    .avatar {
+        @apply inline-flex h-9 w-9 shrink-0 select-none items-center justify-center rounded-full text-xs font-bold text-white;
+    }
+
+    /* Lignes de créneaux dynamiques */
+    .slot-row {
+        @apply grid grid-cols-1 items-end gap-3 rounded-xl border border-slate-200 bg-slate-50/60 p-4 sm:grid-cols-[minmax(0,2fr)_minmax(0,1.5fr)_minmax(0,1.5fr)_auto];
+    }
+
+    /* Éditeur visuel des modèles d'e-mail */
+    .tpl-tool {
+        @apply rounded-lg px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-white hover:text-brand-navy hover:shadow-sm active:scale-95;
+    }
+    .tpl-editor {
+        @apply min-h-[160px] rounded-lg text-[15px] leading-relaxed text-slate-800 outline-none transition focus:ring-2 focus:ring-brand-orange/50;
+    }
+    /* Rendu proche de l'e-mail final (Tailwind reset les listes/titres) */
+    .tpl-editor p {
+        margin: 0 0 12px;
+    }
+    .tpl-editor ul {
+        list-style: disc;
+        padding-left: 24px;
+        margin: 0 0 12px;
+    }
+    .tpl-editor ol {
+        list-style: decimal;
+        padding-left: 24px;
+        margin: 0 0 12px;
+    }
+    .tpl-editor a {
+        color: #06a3da;
+        text-decoration: underline;
+    }
+    .tpl-editor h2 {
+        font-size: 20px;
+        font-weight: 700;
+        color: #062a4d;
+        margin: 0 0 12px;
+    }
+    .tpl-editor h3 {
+        font-size: 17px;
+        font-weight: 700;
+        color: #062a4d;
+        margin: 0 0 10px;
+    }
+}
