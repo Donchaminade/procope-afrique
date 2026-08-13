@@ -58,9 +58,21 @@ final class Mailer
         if ($override && trim((string) $override['body']) !== '') {
             return self::renderOverride($name, (string) $override['body'], $data);
         }
-        extract($data, EXTR_SKIP);
+        return self::renderFile(dirname(__DIR__, 2) . '/templates/mail/' . $name . '.php', $data);
+    }
+
+    /**
+     * Rendu d'un template fichier dans une portée isolée : sans cette
+     * isolation, extract() sautait les clés de données en collision avec les
+     * variables locales de template() ($name, $data, ...) — le template
+     * « contact » affichait par ex. le nom du template au lieu du nom du
+     * contact.
+     */
+    private static function renderFile(string $__file, array $__data): string
+    {
+        extract($__data, EXTR_SKIP);
         ob_start();
-        require dirname(__DIR__, 2) . '/templates/mail/' . $name . '.php';
+        require $__file;
         return (string) ob_get_clean();
     }
 
