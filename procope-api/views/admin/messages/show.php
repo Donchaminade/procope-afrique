@@ -105,7 +105,7 @@ $phoneDigits = preg_replace('/[^\d+]/', '', (string) ($message['phone'] ?? ''));
             </h2>
             <div class="space-y-3">
                 <?php if ($message['statut'] !== 'lu'): ?>
-                    <form method="post" action="/admin/messages/<?= (int) $message['id'] ?>/status">
+                    <form method="post" action="/admin/messages/<?= (int) $message['id'] ?>/status" data-loading-submit data-loading-label="Enregistrement…">
                         <?= csrf_field() ?>
                         <input type="hidden" name="statut" value="lu">
                         <button class="btn-secondary w-full" type="submit">
@@ -114,7 +114,7 @@ $phoneDigits = preg_replace('/[^\d+]/', '', (string) ($message['phone'] ?? ''));
                     </form>
                 <?php endif; ?>
                 <?php if ($message['statut'] !== 'traite'): ?>
-                    <form method="post" action="/admin/messages/<?= (int) $message['id'] ?>/status">
+                    <form method="post" action="/admin/messages/<?= (int) $message['id'] ?>/status" data-loading-submit data-loading-label="Enregistrement…">
                         <?= csrf_field() ?>
                         <input type="hidden" name="statut" value="traite">
                         <button class="btn-primary w-full" type="submit">
@@ -123,7 +123,7 @@ $phoneDigits = preg_replace('/[^\d+]/', '', (string) ($message['phone'] ?? ''));
                     </form>
                 <?php endif; ?>
                 <?php if ($message['statut'] === 'traite'): ?>
-                    <form method="post" action="/admin/messages/<?= (int) $message['id'] ?>/status">
+                    <form method="post" action="/admin/messages/<?= (int) $message['id'] ?>/status" data-loading-submit data-loading-label="Enregistrement…">
                         <?= csrf_field() ?>
                         <input type="hidden" name="statut" value="nouveau">
                         <button class="btn-secondary w-full" type="submit">
@@ -145,6 +145,7 @@ $phoneDigits = preg_replace('/[^\d+]/', '', (string) ($message['phone'] ?? ''));
                 Supprimer
             </h2>
             <form method="post" action="/admin/messages/<?= (int) $message['id'] ?>/delete"
+                  data-loading-submit data-loading-label="Suppression…"
                   data-confirm="Supprimer définitivement ce message de <?= e($message['name']) ?> ? Cette action est irréversible.">
                 <?= csrf_field() ?>
                 <button class="btn-danger w-full" type="submit">

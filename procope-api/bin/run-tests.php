@@ -525,6 +525,9 @@ $html = Mailer::template('confirmation', [
     'amount_declared' => 10000.0,
 ]);
 T::assertContains('/assets/logo.png', $html, 'template confirmation -> logo PROCOPE présent');
+$delivered = Mailer::htmlForDelivery($html);
+T::assertContains('cid:logo-procope', $delivered, 'htmlForDelivery -> logo en CID pour SMTP');
+T::assertNotContains('127.0.0.1', $delivered, 'htmlForDelivery -> plus d\'URL localhost pour le logo');
 T::assertContains('Formation test unitaire', $html, 'template confirmation -> titre de la formation');
 T::assertNotContains('<script>alert(1)</script>', $html, 'template confirmation -> nom échappé (pas de XSS)');
 T::assertContains('&lt;script&gt;', $html, 'template confirmation -> échappement HTML visible');
@@ -545,6 +548,14 @@ $html = Mailer::template('contact', [
 ]);
 T::assertContains('Message de test unitaire.', $html, 'template contact -> message rendu');
 T::assertContains('Visiteur Test', $html, 'template contact -> nom du contact rendu');
+
+$parsed = Mailer::parseNotifyList(
+    ' procopeafrique@gmail.com , CHAMINADE.DONDAH.ADJOLOU@gmail.com;procopeafrique@gmail.com;pas-un-email '
+);
+T::assertTrue(count($parsed) === 2, 'parseNotifyList -> 2 adresses valides uniques', implode(',', $parsed));
+T::assertTrue($parsed[0] === 'procopeafrique@gmail.com', 'parseNotifyList -> 1re adresse normalisée');
+T::assertTrue($parsed[1] === 'chaminade.dondah.adjolou@gmail.com', 'parseNotifyList -> 2e adresse en minuscules');
+T::assertTrue(Mailer::parseNotifyList('') === [], 'parseNotifyList -> liste vide');
 
 // ---------------------------------------------------------------------
 exit(T::summary());

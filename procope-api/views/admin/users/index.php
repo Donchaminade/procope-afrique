@@ -71,6 +71,7 @@ $roleBadges = [
                             <?php if ((int) $user['is_active']): ?>
                                 <form class="inline-flex" method="post"
                                       action="/admin/users/<?= (int) $user['id'] ?>/delete"
+                                      data-loading-submit
                                       data-confirm="Désactiver ce compte ?">
                                     <?= csrf_field() ?>
                                     <button class="btn-icon-danger" type="submit" title="Désactiver le compte">

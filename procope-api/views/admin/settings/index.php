@@ -4,7 +4,7 @@
     <p class="mt-1 text-sm text-slate-500">Informations publiques du site et destinataires des alertes internes.</p>
 </div>
 
-<form method="post" action="/admin/settings" class="max-w-3xl space-y-6">
+<form method="post" action="/admin/settings" class="max-w-3xl space-y-6" data-loading-submit data-loading-label="Enregistrement…">
     <?= csrf_field() ?>
 
     <!-- Informations du site -->
@@ -100,12 +100,16 @@
         <div class="space-y-5">
             <div>
                 <label class="label" for="s-notify">
-                    Destinataires des alertes internes <span class="hint">(séparés par des virgules)</span>
+                    Destinataires des alertes internes <span class="hint">(virgules ou points-virgules)</span>
                 </label>
                 <input class="input" id="s-notify" type="text" name="mail_notify"
+                       placeholder="procopeafrique@gmail.com, autre@exemple.com"
                        value="<?= e($values['mail_notify']) ?>">
                 <p class="mt-1.5 text-xs text-slate-400">
-                    Reçoivent les alertes de nouvelles inscriptions et les notifications de messages de contact.
+                    Reçoivent les alertes internes (nouvelle inscription, message de contact, candidature emploi).
+                    Plusieurs adresses : séparées par des virgules ou des points-virgules.
+                    Indépendant du compte SMTP d'authentification et du From visible
+                    (<span class="font-mono">MAIL_FROM</span> / <span class="font-mono">MAIL_REPLY_TO</span> dans le <span class="font-mono">.env</span>).
                 </p>
             </div>
             <div class="flex items-start gap-2.5 rounded-xl bg-slate-50 p-4 text-xs text-slate-500 ring-1 ring-inset ring-slate-200">

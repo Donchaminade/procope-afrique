@@ -156,6 +156,7 @@ $toggleForm = static function (string $key, bool $checked, string $label): strin
                         Envoyer l'annonce d'une formation
                     </p>
                     <form method="post" action="/admin/formations/0/announce"
+                          data-loading-submit data-loading-label="Envoi…"
                           data-announce-form="/admin/formations/{id}/announce"
                           data-confirm="Envoyer l'annonce de cette formation aux anciens participants et aux candidats aux offres d'emploi (ayant une adresse e-mail) ?"
                           class="flex flex-col gap-3 px-4 py-3.5 sm:flex-row sm:items-center">
@@ -186,6 +187,7 @@ $toggleForm = static function (string $key, bool $checked, string $label): strin
                         </p>
                     <?php else: ?>
                         <form method="post" action="/admin/emplois/0/announce"
+                              data-loading-submit data-loading-label="Envoi…"
                               data-announce-form="/admin/emplois/{id}/announce"
                               data-confirm="Envoyer l'annonce de cette offre à toute la communauté (participants aux formations + candidats, ayant une adresse e-mail) ?"
                               class="flex flex-col gap-3 px-4 py-3.5 sm:flex-row sm:items-center">
@@ -211,6 +213,7 @@ $toggleForm = static function (string $key, bool $checked, string $label): strin
                         Traiter les rappels dus maintenant
                     </p>
                     <form method="post" action="/admin/emplois/reminders/run"
+                          data-loading-submit data-loading-label="Envoi…"
                           data-confirm="Envoyer maintenant les rappels J-5 pour toutes les offres publiées arrivant à échéance (un seul rappel par offre) ?"
                           class="flex flex-col gap-3 px-4 py-3.5 sm:flex-row sm:items-center">
                         <?= csrf_field() ?>
@@ -240,7 +243,7 @@ $toggleForm = static function (string $key, bool $checked, string $label): strin
             <span class="card-title-icon"><?= icon('paper-airplane', 'h-5 w-5') ?></span>
             E-mail de test
         </h2>
-        <form method="post" action="/admin/automations/test-mail">
+        <form method="post" action="/admin/automations/test-mail" data-loading-submit data-loading-label="Envoi…">
             <?= csrf_field() ?>
             <div class="flex flex-col gap-3 sm:flex-row">
                 <div class="input-icon-wrap flex-1">
@@ -297,6 +300,7 @@ $toggleForm = static function (string $key, bool $checked, string $label): strin
                         </a>
                         <?php if ($override): ?>
                             <form method="post" action="/admin/automations/templates/<?= e($name) ?>/reset"
+                                  data-loading-submit
                                   data-confirm="Réinitialiser le modèle « <?= e($tpl['label']) ?> » ? La version personnalisée sera supprimée et le rendu par défaut sera de nouveau utilisé.">
                                 <?= csrf_field() ?>
                                 <button class="btn-icon-danger" type="submit" title="Réinitialiser"
@@ -353,6 +357,7 @@ $toggleForm = static function (string $key, bool $checked, string $label): strin
                 <?= icon('arrow-path', 'h-4 w-4') ?> Actualiser
             </a>
             <form method="post" action="/admin/automations/logs/purge-failed"
+                  data-loading-submit data-loading-label="Suppression…"
                   data-confirm="Supprimer définitivement les e-mails en échec du journal<?= $logFilters['type'] !== '' ? ' (type filtré uniquement)' : '' ?> ?">
                 <?= csrf_field() ?>
                 <input type="hidden" name="log_type" value="<?= e($logFilters['type']) ?>">

@@ -263,6 +263,106 @@
         });
     }
 
+    /* ---- Soumission avec état « chargement » --------------------------------
+       Cible : form[data-loading-submit] OU tout POST admin, sauf
+       interrupteurs [data-autosubmit], filtres GET / [data-autofilter],
+       et form[data-no-loading] (ex. déconnexion).
+       data-confirm / data-announce-form s'exécutent avant (enregistrés plus
+       haut) : si preventDefault, on n'active pas le loader.
+       État uniquement en mémoire : un rechargement remet les boutons. */
+    var LOADING_SPINNER = '<svg class="h-5 w-5 shrink-0 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">'
+        + '<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>'
+        + '<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>'
+        + '</svg>';
+
+    function loadingLabelFor(source) {
+        var explicit = source.getAttribute('data-loading-label');
+        if (explicit) return explicit;
+        var raw = (source.textContent || source.getAttribute('title') || '').replace(/\s+/g, ' ').trim().toLowerCase();
+        if (raw.indexOf('connecter') !== -1) return 'Connexion…';
+        if (raw.indexOf('enregistrer') !== -1 || raw.indexOf('créer') !== -1 || raw.indexOf('mettre à jour') !== -1) {
+            return 'Enregistrement…';
+        }
+        if (raw.indexOf('supprimer') !== -1 || raw.indexOf('purger') !== -1 || raw.indexOf('désactiver') !== -1) {
+            return 'Suppression…';
+        }
+        if (raw.indexOf('archiver') !== -1) return 'Archivage…';
+        if (raw.indexOf('restaurer') !== -1) return 'Restauration…';
+        if (raw.indexOf('publier') !== -1 || raw.indexOf('dépublier') !== -1) return 'Publication…';
+        if (raw.indexOf('valider') !== -1 || raw.indexOf('vérifier') !== -1 || raw.indexOf('retenir') !== -1) {
+            return 'Validation…';
+        }
+        if (raw.indexOf('envoyer') !== -1 || raw.indexOf('exécuter') !== -1 || raw.indexOf('annoncer') !== -1
+            || raw.indexOf('renvoyer') !== -1) {
+            return 'Envoi…';
+        }
+        if (raw.indexOf('ajouter') !== -1) return 'Envoi…';
+        if (raw.indexOf('export') !== -1 || raw.indexOf('excel') !== -1 || raw.indexOf('pdf') !== -1) {
+            return 'Export…';
+        }
+        return 'Envoi…';
+    }
+
+    function applySubmitLoading(btn, form) {
+        btn.disabled = true;
+        btn.setAttribute('aria-busy', 'true');
+        btn.classList.add('pointer-events-none', 'opacity-70');
+        var idle = btn.querySelector('[data-loading-idle]');
+        var busy = btn.querySelector('[data-loading-busy]');
+        if (idle && busy) {
+            idle.classList.add('hidden');
+            busy.classList.remove('hidden');
+            busy.removeAttribute('aria-hidden');
+            return;
+        }
+        var iconOnly = btn.classList.contains('btn-icon') || btn.classList.contains('btn-icon-danger')
+            || ((btn.textContent || '').replace(/\s+/g, '') === '');
+        if (iconOnly) {
+            btn.innerHTML = LOADING_SPINNER.replace('h-5 w-5', 'h-4 w-4');
+            return;
+        }
+        var label = form.getAttribute('data-loading-label') || loadingLabelFor(btn);
+        btn.innerHTML = LOADING_SPINNER + '<span>' + label + '</span>';
+    }
+
+    function bindLoadingSubmit(form) {
+        form.addEventListener('submit', function (event) {
+            if (event.defaultPrevented) return;
+            if (form.getAttribute('data-submitting') === '1') {
+                event.preventDefault();
+                return;
+            }
+            var buttons = form.querySelectorAll('button[type="submit"], input[type="submit"]');
+            var clicked = event.submitter || form.querySelector('[type="submit"]');
+            if (clicked && clicked.disabled) {
+                event.preventDefault();
+                return;
+            }
+            form.setAttribute('data-submitting', '1');
+            buttons.forEach(function (btn) { applySubmitLoading(btn, form); });
+        });
+    }
+
+    document.querySelectorAll('form').forEach(function (form) {
+        if (form.hasAttribute('data-no-loading')) return;
+        if (form.querySelector('[data-autosubmit], [data-autofilter]')) return;
+        var method = (form.getAttribute('method') || 'get').toLowerCase();
+        var explicit = form.hasAttribute('data-loading-submit');
+        if (!explicit && method !== 'post') return;
+        bindLoadingSubmit(form);
+    });
+
+    /* Exports longs (liens GET) : feedback visuel le temps de la génération. */
+    document.querySelectorAll('a[data-loading-export], a[href*="/export"], a[href*="/pdf"]').forEach(function (link) {
+        link.addEventListener('click', function () {
+            if (link.getAttribute('aria-busy') === 'true') return;
+            link.setAttribute('aria-busy', 'true');
+            link.classList.add('pointer-events-none', 'opacity-70');
+            var label = loadingLabelFor(link);
+            link.innerHTML = LOADING_SPINNER + '<span>' + label + '</span>';
+        });
+    });
+
     /* ---- Afficher / masquer le mot de passe (bouton oeil) ---- */
     document.querySelectorAll('[data-toggle-password]').forEach(function (btn) {
         var input = document.getElementById(btn.getAttribute('data-toggle-password'));

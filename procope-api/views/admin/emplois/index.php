@@ -90,7 +90,8 @@ $deadlineBadge = static function (array $offer): string {
                                     <?= icon('pencil', 'h-4 w-4') ?>
                                 </a>
                                 <form class="inline-flex" method="post"
-                                      action="/admin/emplois/<?= (int) $offer['id'] ?>/publish">
+                                      action="/admin/emplois/<?= (int) $offer['id'] ?>/publish"
+                                      data-loading-submit>
                                     <?= csrf_field() ?>
                                     <button type="submit" class="btn-icon"
                                             title="<?= (int) $offer['is_published'] ? 'Dépublier l\'offre' : 'Publier l\'offre' ?>">
@@ -101,6 +102,7 @@ $deadlineBadge = static function (array $offer): string {
                                 </form>
                                 <form class="inline-flex" method="post"
                                       action="/admin/emplois/<?= (int) $offer['id'] ?>/archive"
+                                      data-loading-submit
                                       data-confirm="Archiver cette offre ? Elle sera dépubliée et disparaîtra des listes actives, mais restera consultable (avec ses candidatures) dans les Archives.">
                                     <?= csrf_field() ?>
                                     <button type="submit" class="btn-icon" title="Archiver l'offre">
@@ -109,6 +111,7 @@ $deadlineBadge = static function (array $offer): string {
                                 </form>
                                 <form class="inline-flex" method="post"
                                       action="/admin/emplois/<?= (int) $offer['id'] ?>/delete"
+                                      data-loading-submit
                                       data-confirm="Supprimer définitivement cette offre, ses candidatures et les CV associés ?">
                                     <?= csrf_field() ?>
                                     <button type="submit" class="btn-icon-danger" title="Supprimer">
