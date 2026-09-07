@@ -32,7 +32,7 @@ $editorHtml = $bodyIsPlain ? nl2br(e($body)) : $body;
     </a>
 </div>
 
-<form method="post" action="/admin/automations/templates/<?= e($name) ?>" id="tpl-form" class="max-w-3xl space-y-6">
+<form method="post" action="/admin/automations/templates/<?= e($name) ?>" id="tpl-form" class="max-w-3xl space-y-6" data-loading-submit data-loading-label="Enregistrement…">
     <?= csrf_field() ?>
 
     <div class="card">

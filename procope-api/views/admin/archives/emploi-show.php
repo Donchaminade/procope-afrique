@@ -27,6 +27,7 @@ foreach ($applications as $a) {
         </a>
         <?php if (\App\Services\Auth::isAtLeast('admin')): ?>
             <form method="post" action="/admin/archives/emplois/<?= (int) $offer['id'] ?>/restore"
+                  data-loading-submit data-loading-label="Restauration…"
                   data-confirm="Restaurer cette offre ? Elle réapparaîtra dans la liste des offres (non publiée).">
                 <?= csrf_field() ?>
                 <button class="btn-primary" type="submit">

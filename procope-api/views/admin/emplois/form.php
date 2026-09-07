@@ -29,7 +29,7 @@ $toLocal = static function (?string $datetime): string {
 </div>
 
 <form method="post" action="<?= $isEdit ? '/admin/emplois/' . (int) $offer['id'] : '/admin/emplois' ?>"
-      enctype="multipart/form-data" class="max-w-4xl space-y-6">
+      enctype="multipart/form-data" class="max-w-4xl space-y-6" data-loading-submit data-loading-label="Enregistrement…">
     <?= csrf_field() ?>
 
     <div class="card">
@@ -172,6 +172,7 @@ $toLocal = static function (?string $datetime): string {
                                 </form>
                                 <form method="post"
                                       action="/admin/emplois/<?= (int) $offer['id'] ?>/images/<?= (int) $image['id'] ?>/delete"
+                                      data-loading-submit data-loading-label="Suppression…"
                                       data-confirm="Supprimer définitivement cette affiche ?">
                                     <?= csrf_field() ?>
                                     <button class="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-red-500 transition hover:bg-red-50"
@@ -190,7 +191,8 @@ $toLocal = static function (?string $datetime): string {
             <?php endif; ?>
 
             <form method="post" action="/admin/emplois/<?= (int) $offer['id'] ?>/images"
-                  enctype="multipart/form-data" class="flex flex-wrap items-end gap-3">
+                  enctype="multipart/form-data" class="flex flex-wrap items-end gap-3"
+                  data-loading-submit data-loading-label="Envoi…">
                 <?= csrf_field() ?>
                 <div class="min-w-64 flex-1">
                     <label class="label" for="o-images">Ajouter des affiches <span class="hint">(JPEG, PNG ou WebP — sélection multiple)</span></label>
@@ -219,6 +221,7 @@ $toLocal = static function (?string $datetime): string {
                 L'envoi manuel ignore les interrupteurs d'automatisation.
             </p>
             <form method="post" action="/admin/emplois/<?= (int) $offer['id'] ?>/announce"
+                  data-loading-submit data-loading-label="Envoi…"
                   data-confirm="Envoyer l'annonce de cette offre à <?= $recipients ?> destinataire<?= $recipients > 1 ? 's' : '' ?> ?">
                 <?= csrf_field() ?>
                 <button class="btn-secondary" type="submit" <?= $recipients === 0 ? 'disabled' : '' ?>>
@@ -240,6 +243,7 @@ $toLocal = static function (?string $datetime): string {
                 La suppression est définitive et retire aussi les candidatures reçues et leurs CV.
             </p>
             <form method="post" action="/admin/emplois/<?= (int) $offer['id'] ?>/delete"
+                  data-loading-submit data-loading-label="Suppression…"
                   data-confirm="Supprimer définitivement cette offre, ses candidatures et les CV associés ?">
                 <?= csrf_field() ?>
                 <button class="btn-danger" type="submit">

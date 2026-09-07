@@ -65,7 +65,8 @@
                                         <?= icon('pencil', 'h-4 w-4') ?>
                                     </a>
                                     <form class="inline-flex" method="post"
-                                          action="/admin/formations/<?= (int) $formation['id'] ?>/toggle">
+                                          action="/admin/formations/<?= (int) $formation['id'] ?>/toggle"
+                                          data-loading-submit>
                                         <?= csrf_field() ?>
                                         <button type="submit" class="btn-icon"
                                                 title="<?= (int) $formation['inscriptions_ouvertes'] ? 'Fermer les inscriptions' : 'Ouvrir les inscriptions' ?>">
@@ -76,6 +77,7 @@
                                     </form>
                                     <form class="inline-flex" method="post"
                                           action="/admin/formations/<?= (int) $formation['id'] ?>/archive"
+                                          data-loading-submit
                                           data-confirm="Archiver cette formation et ses inscriptions ?">
                                         <?= csrf_field() ?>
                                         <button type="submit" class="btn-icon" title="Archiver">

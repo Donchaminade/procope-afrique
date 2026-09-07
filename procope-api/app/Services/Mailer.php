@@ -9,9 +9,14 @@ use App\Models\Setting;
 
 /**
  * Envoi de mails via PHPMailer (SMTP) si présent, sinon mail() natif.
- * La configuration SMTP vit dans le .env (SMTP_*, MAIL_FROM*) ;
- * seuls le master switch (mail_enabled) et les toggles auto_* sont en base.
- * Tous les envois sont journalisés dans mail_logs.
+ * La configuration SMTP vit dans le .env (SMTP_*, MAIL_FROM*, MAIL_REPLY_TO*).
+ * SMTP_USER / SMTP_PASS = authentification uniquement (jamais affichés).
+ * MAIL_FROM = From visible (ex. procopeafrique@gmail.com).
+ * MAIL_REPLY_TO = Reply-To (réponses vers la boîte publique).
+ * Sender / envelope = SMTP_USER (compte qui authentifie).
+ * Gmail réécrit le From si MAIL_FROM n'est pas un alias « Envoyer en tant que »
+ * du compte SMTP_USER. Seuls le master switch (mail_enabled) et les toggles
+ * auto_* sont en base. Tous les envois sont journalisés dans mail_logs.
  */
 final class Mailer
 {
@@ -58,9 +63,21 @@ final class Mailer
         if ($override && trim((string) $override['body']) !== '') {
             return self::renderOverride($name, (string) $override['body'], $data);
         }
-        extract($data, EXTR_SKIP);
+        return self::renderFile(dirname(__DIR__, 2) . '/templates/mail/' . $name . '.php', $data);
+    }
+
+    /**
+     * Rendu d'un template fichier dans une portée isolée : sans cette
+     * isolation, extract() sautait les clés de données en collision avec les
+     * variables locales de template() ($name, $data, ...) — le template
+     * « contact » affichait par ex. le nom du template au lieu du nom du
+     * contact.
+     */
+    private static function renderFile(string $__file, array $__data): string
+    {
+        extract($__data, EXTR_SKIP);
         ob_start();
-        require dirname(__DIR__, 2) . '/templates/mail/' . $name . '.php';
+        require $__file;
         return (string) ob_get_clean();
     }
 
@@ -275,11 +292,91 @@ final class Mailer
         }
     }
 
-    /** Envoie aux destinataires internes (setting mail_notify, séparés par des virgules). */
+    /** Destinataire public historique si mail_notify / MAIL_NOTIFY sont vides. */
+    public const TEAM_NOTIFY_FALLBACK = 'procopeafrique@gmail.com';
+
+    /** Content-ID du logo embarqué (HTML d'envoi : src="cid:logo-procope"). */
+    public const LOGO_CID = 'logo-procope';
+
+    /** Fichier source du logo (pièce jointe inline). */
+    public static function logoPath(): string
+    {
+        return dirname(__DIR__, 2) . '/public/assets/logo.png';
+    }
+
+    /**
+     * URL publique du logo (prévisualisation admin + repli si le fichier
+     * CID est absent). En local = APP_URL (ex. http://127.0.0.1:8088/assets/logo.png)
+     * — inutilisable par Gmail, d'où l'embarque CID à l'envoi.
+     */
+    public static function logoPublicUrl(): string
+    {
+        $appUrl = rtrim((string) Env::get('APP_URL', ''), '/');
+        return ($appUrl !== '' ? $appUrl : '') . '/assets/logo.png';
+    }
+
+    /**
+     * HTML destiné au SMTP : remplace l'URL du logo par cid:logo-procope
+     * si le fichier existe. La preview admin continue d'utiliser logoPublicUrl().
+     */
+    public static function htmlForDelivery(string $html): string
+    {
+        if (!is_file(self::logoPath())) {
+            return $html;
+        }
+        $url = self::logoPublicUrl();
+        if ($url !== '' && str_contains($html, $url)) {
+            return str_replace($url, 'cid:' . self::LOGO_CID, $html);
+        }
+        return $html;
+    }
+
+    /**
+     * Parse MAIL_NOTIFY / mail_notify : virgules ou points-virgules, trim,
+     * dédoublonnage (insensible à la casse), validation du format e-mail.
+     *
+     * @return list<string>
+     */
+    public static function parseNotifyList(?string $raw): array
+    {
+        $parts = preg_split('/[,;]+/', (string) $raw) ?: [];
+        $seen = [];
+        $out = [];
+        foreach ($parts as $part) {
+            $email = mb_strtolower(trim($part));
+            if ($email === '' || isset($seen[$email])) {
+                continue;
+            }
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                continue;
+            }
+            $seen[$email] = true;
+            $out[] = $email;
+        }
+        return $out;
+    }
+
+    /**
+     * Destinataires des alertes internes (setting mail_notify, sinon MAIL_NOTIFY,
+     * sinon TEAM_NOTIFY_FALLBACK). Toujours au moins une adresse valide.
+     *
+     * @return list<string>
+     */
+    public static function teamRecipients(): array
+    {
+        $list = self::parseNotifyList((string) Setting::get('mail_notify', self::TEAM_NOTIFY_FALLBACK));
+        return $list !== [] ? $list : [self::TEAM_NOTIFY_FALLBACK];
+    }
+
+    /**
+     * Envoie aux destinataires internes. Un appel send() (donc un mail_log
+     * to_email + sent/failed) par destinataire — cohérent avec MailLog
+     * (une colonne to_email, pas de liste). From / Reply-To inchangés
+     * (MAIL_FROM / MAIL_REPLY_TO, jamais l'adresse perso).
+     */
     public static function notifyTeam(string $subject, string $html, string $type, ?int $inscriptionId = null): void
     {
-        $recipients = array_filter(array_map('trim', explode(',', (string) Setting::get('mail_notify', ''))));
-        foreach ($recipients as $to) {
+        foreach (self::teamRecipients() as $to) {
             self::send($to, $subject, $html, $type, $inscriptionId);
         }
     }
@@ -294,6 +391,7 @@ final class Mailer
         $mail->Host       = (string) Env::get('SMTP_HOST', '');
         $mail->Port       = Env::int('SMTP_PORT', 465);
         $mail->SMTPAuth   = true;
+        $mail->Timeout    = 25;
         $mail->Username   = (string) Env::get('SMTP_USER', '');
         $mail->Password   = (string) Env::get('SMTP_PASS', '');
         $secure = strtolower((string) Env::get('SMTP_SECURE', 'ssl'));
@@ -301,25 +399,42 @@ final class Mailer
             ? \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS
             : \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_SMTPS;
         $mail->CharSet = 'UTF-8';
-        $mail->setFrom(
-            (string) Env::get('MAIL_FROM', 'noreply@procopeafrique.com'),
-            (string) Env::get('MAIL_FROM_NAME', 'PROCOPE Afrique')
-        );
+        $fromEmail = (string) Env::get('MAIL_FROM', self::TEAM_NOTIFY_FALLBACK);
+        $fromName  = (string) Env::get('MAIL_FROM_NAME', 'PROCOPE Afrique');
+        $replyTo   = (string) Env::get('MAIL_REPLY_TO', self::TEAM_NOTIFY_FALLBACK);
+        $replyName = (string) Env::get('MAIL_REPLY_TO_NAME', 'PROCOPE Afrique');
+        // Envelope / Return-Path = compte authentifié (Gmail l'exige).
+        // Le From visible peut être une autre adresse (alias « Envoyer en tant que »).
+        $smtpUser = (string) Env::get('SMTP_USER', '');
+        if ($smtpUser !== '') {
+            $mail->Sender = $smtpUser;
+        }
+        $mail->setFrom($fromEmail, $fromName);
+        $mail->addReplyTo($replyTo, $replyName);
         $mail->addAddress($to);
         $mail->isHTML(true);
         $mail->Subject = $subject;
-        $mail->Body    = $html;
-        $mail->AltBody = strip_tags(preg_replace('#<br\s*/?>#i', "\n", $html));
+        $deliveryHtml = self::htmlForDelivery($html);
+        $logoPath = self::logoPath();
+        if (is_file($logoPath) && str_contains($deliveryHtml, 'cid:' . self::LOGO_CID)) {
+            $mail->addEmbeddedImage($logoPath, self::LOGO_CID, 'logo.png');
+        }
+        $mail->Body    = $deliveryHtml;
+        $mail->AltBody = strip_tags(preg_replace('#<br\s*/?>#i', "\n", $deliveryHtml));
         $mail->send();
     }
 
     private static function sendNative(string $to, string $subject, string $html): void
     {
-        $from = (string) Env::get('MAIL_FROM', 'noreply@procopeafrique.com');
+        $from = (string) Env::get('MAIL_FROM', self::TEAM_NOTIFY_FALLBACK);
+        $fromName = (string) Env::get('MAIL_FROM_NAME', 'PROCOPE Afrique');
+        $replyTo = (string) Env::get('MAIL_REPLY_TO', self::TEAM_NOTIFY_FALLBACK);
+        $replyName = (string) Env::get('MAIL_REPLY_TO_NAME', 'PROCOPE Afrique');
         $headers = implode("\r\n", [
             'MIME-Version: 1.0',
             'Content-Type: text/html; charset=UTF-8',
-            'From: ' . Env::get('MAIL_FROM_NAME', 'PROCOPE Afrique') . ' <' . $from . '>',
+            'From: ' . $fromName . ' <' . $from . '>',
+            'Reply-To: ' . $replyName . ' <' . $replyTo . '>',
         ]);
         if (!mail($to, '=?UTF-8?B?' . base64_encode($subject) . '?=', $html, $headers)) {
             throw new \RuntimeException('mail() a échoué (SMTP non configuré sur ce serveur)');

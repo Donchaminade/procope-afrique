@@ -106,7 +106,7 @@ $newMessagesCount = \App\Models\ContactMessage::countNew();
                 </span>
             </div>
         </div>
-        <form method="post" action="/admin/logout" class="mt-3">
+        <form method="post" action="/admin/logout" class="mt-3" data-no-loading>
             <?= csrf_field() ?>
             <button type="submit"
                     class="flex w-full items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-300 ring-1 ring-inset ring-white/15 transition hover:bg-white/10 hover:text-white">

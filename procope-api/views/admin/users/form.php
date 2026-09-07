@@ -17,7 +17,7 @@ $isEdit = $user !== null;
     </a>
 </div>
 
-<form method="post" action="<?= $isEdit ? '/admin/users/' . (int) $user['id'] : '/admin/users' ?>" class="max-w-xl">
+<form method="post" action="<?= $isEdit ? '/admin/users/' . (int) $user['id'] : '/admin/users' ?>" class="max-w-xl" data-loading-submit data-loading-label="Enregistrement…">
     <?= csrf_field() ?>
     <div class="card space-y-5">
         <h2 class="card-title">
