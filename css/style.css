@@ -668,8 +668,36 @@ html[data-theme="dark"] .objectif-card-img {
     z-index: 1;
 }
 
+.testimonial-carousel {
+    max-width: 100%;
+}
+
+.testimonial-carousel .owl-item {
+    min-width: 0;
+}
+
 .testimonial-carousel .owl-item .testimonial-item {
     transition: .5s;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.testimonial-item {
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.testimonial-item .tm-quote,
+.testimonial-item h4,
+.testimonial-item small {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.testimonial-item .ps-4 {
+    min-width: 0;
+    overflow: hidden;
 }
 
 .testimonial-carousel .owl-item.center .testimonial-item {

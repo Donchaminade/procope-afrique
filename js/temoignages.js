@@ -229,6 +229,10 @@
                 showAlert('danger', 'Votre témoignage est trop court (20 caractères minimum).');
                 return;
             }
+            if (quote.length > 2000) {
+                showAlert('danger', 'Votre témoignage est trop long (2000 caractères maximum).');
+                return;
+            }
 
             var btn = document.getElementById('tm-submit');
             var prev = btn ? btn.textContent : '';
@@ -284,12 +288,12 @@
             '<div class="testimonial-item bg-light my-4">' +
                 '<div class="d-flex align-items-center border-bottom pt-5 pb-4 px-5">' +
                     avatar +
-                    '<div class="ps-4">' +
+                    '<div class="ps-4 min-w-0 overflow-hidden">' +
                         '<h4 class="text-primary mb-1">' + esc(name) + '</h4>' +
                         (role ? '<small class="text-uppercase">' + esc(role) + '</small>' : '') +
                     '</div>' +
                 '</div>' +
-                '<div class="pt-4 pb-5 px-5">' + esc(quote) + '</div>' +
+                '<div class="tm-quote text-break pt-4 pb-5 px-5">' + esc(quote) + '</div>' +
             '</div>'
         );
     }

@@ -30,7 +30,7 @@ $pendingTestimonials = \App\Models\Testimonial::countPending();
     <meta name="robots" content="noindex, nofollow">
     <title><?= e($title ?? 'Admin') ?> — PROCOPE Admin</title>
     <link rel="icon" type="image/png" href="/assets/logo.png">
-    <link rel="stylesheet" href="/assets/admin.css">
+    <link rel="stylesheet" href="/assets/admin.css?v=20260908-tm">
     <script src="/assets/admin.js" defer></script>
 </head>
 <body class="min-h-screen">
