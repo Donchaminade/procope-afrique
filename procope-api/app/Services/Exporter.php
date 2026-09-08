@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Inscription;
 use App\Models\JobApplication;
+use App\Models\ProjectApplication;
 
 /**
  * Export des inscriptions et des candidatures d'emploi :
@@ -40,6 +41,33 @@ final class Exporter
         $rows = array_map([self::class, 'mapApplicationRow'], JobApplication::allFiltered($filters));
         $filename = 'candidatures-procope-' . date('Ymd-His');
         self::downloadTable(self::APPLICATION_HEADERS, $rows, $filename, 'Candidatures');
+    }
+
+    private const PROJECT_APPLICATION_HEADERS = [
+        'Origine', 'Nom du projet porté', 'Nom et prénom', 'Email', 'Téléphone',
+        'Secteur', 'Statut', 'Date de dépôt', 'Pitch (extrait)',
+    ];
+
+    public static function downloadProjectApplications(array $filters): never
+    {
+        $rows = array_map([self::class, 'mapProjectApplicationRow'], ProjectApplication::allFiltered($filters));
+        $filename = 'depots-projets-procope-' . date('Ymd-His');
+        self::downloadTable(self::PROJECT_APPLICATION_HEADERS, $rows, $filename, 'Depots');
+    }
+
+    private static function mapProjectApplicationRow(array $a): array
+    {
+        return [
+            $a['call_title'] ?: 'Candidature spontanée',
+            $a['project_name'] ?? '',
+            $a['full_name'],
+            $a['email'],
+            $a['phone'],
+            $a['sector'] ?? '',
+            ProjectApplication::STATUT_LABELS[$a['statut']] ?? $a['statut'],
+            $a['created_at'],
+            self::truncate((string) ($a['pitch'] ?? $a['message'] ?? ''), 180),
+        ];
     }
 
     private static function downloadTable(array $headers, array $rows, string $filename, string $sheetTitle): never

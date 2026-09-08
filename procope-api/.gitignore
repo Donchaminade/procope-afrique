@@ -10,4 +10,8 @@
 !/storage/cv/index.html
 /public/uploads/*
 !/public/uploads/.gitkeep
+/storage/projets/*
+!/storage/projets/.htaccess
+!/storage/projets/index.html
+!/storage/projets/demo-*.pdf
 composer.lock

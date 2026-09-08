@@ -1,0 +1,3 @@
+# Aucune lecture directe : les pitch decks sont servis via /admin/projets/depots/{id}/fichier
+Require all denied
+php_flag engine off

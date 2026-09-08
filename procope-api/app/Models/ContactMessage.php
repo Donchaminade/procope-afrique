@@ -72,4 +72,21 @@ final class ContactMessage
     {
         Database::run('DELETE FROM contact_messages WHERE id = ?', [$id]);
     }
+
+    /** Suppression en lot. Retourne le nombre de lignes réellement retirées. */
+    public static function deleteMany(array $ids): int
+    {
+        $ids = array_values(array_unique(array_filter(
+            array_map('intval', $ids),
+            static fn (int $id): bool => $id > 0
+        )));
+        if (!$ids) {
+            return 0;
+        }
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        return Database::run(
+            "DELETE FROM contact_messages WHERE id IN ($placeholders)",
+            $ids
+        )->rowCount();
+    }
 }

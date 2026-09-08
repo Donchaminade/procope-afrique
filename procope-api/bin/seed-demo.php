@@ -9,8 +9,8 @@
  *
  * Marqueurs d'identification (jamais touchés par --fresh en dehors d'eux) :
  *   - e-mails  : *@demo.procope.test
- *   - slugs    : demo-*  (formations et offres d'emploi)
- *   - fichiers : demo-*  (storage/proofs, storage/cv, public/uploads/offres)
+ *   - slugs    : demo-*  (formations, offres, projets incubés, appels)
+ *   - fichiers : demo-*  (storage/proofs, storage/cv, storage/projets, public/uploads/offres, public/uploads/projets, public/uploads/temoignages, public/uploads/galeries)
  *
  * Garde-fou : refuse de tourner si APP_ENV vaut « production » / « prod »,
  * ou si APP_ENV est absent du .env (on ne seed jamais un environnement
@@ -168,6 +168,31 @@ if ($fresh) {
         @unlink($root . '/public/uploads/offres/' . basename((string) $p));
     }
 
+    $hasProjects = (bool) $pdo->query("SHOW TABLES LIKE 'incubated_projects'")->fetchColumn();
+    $hasCalls = (bool) $pdo->query("SHOW TABLES LIKE 'incubation_calls'")->fetchColumn();
+    if ($hasProjects) {
+        $projImgPaths = $pdo->query(
+            "SELECT path FROM project_images
+              WHERE project_id IN (SELECT id FROM incubated_projects WHERE slug LIKE '" . DEMO_SLUG_PREFIX . "%')"
+        )->fetchAll(PDO::FETCH_COLUMN);
+        foreach ($projImgPaths as $p) {
+            @unlink($root . '/public/uploads/projets/' . basename((string) $p));
+        }
+        $pitchPaths = $pdo->query(
+            "SELECT file_path FROM project_applications
+              WHERE file_path IS NOT NULL
+                AND (email LIKE '%@" . DEMO_EMAIL_DOMAIN . "'"
+            . ($hasCalls
+                ? " OR call_id IN (SELECT id FROM incubation_calls WHERE slug LIKE '" . DEMO_SLUG_PREFIX . "%')"
+                : '')
+            . " OR project_id IN
+                     (SELECT id FROM incubated_projects WHERE slug LIKE '" . DEMO_SLUG_PREFIX . "%'))"
+        )->fetchAll(PDO::FETCH_COLUMN);
+        foreach ($pitchPaths as $p) {
+            @unlink($root . '/storage/projets/' . basename((string) $p));
+        }
+    }
+
     // Lignes en base (ordre : enfants avant parents, FK RESTRICT sur inscriptions)
     $n = $pdo->exec(
         "DELETE FROM inscriptions
@@ -187,11 +212,68 @@ if ($fresh) {
     echo "  formations supprimées : $n\n";
     $n = $pdo->exec("DELETE FROM contact_messages WHERE email LIKE '%@" . DEMO_EMAIL_DOMAIN . "'");
     echo "  messages de contact supprimés : $n\n";
+    if ($hasProjects) {
+        $n = $pdo->exec(
+            "DELETE FROM project_applications
+              WHERE email LIKE '%@" . DEMO_EMAIL_DOMAIN . "'"
+            . ($hasCalls
+                ? " OR call_id IN (SELECT id FROM (SELECT id FROM incubation_calls WHERE slug LIKE '" . DEMO_SLUG_PREFIX . "%') t)"
+                : '')
+            . " OR project_id IN (SELECT id FROM (SELECT id FROM incubated_projects WHERE slug LIKE '" . DEMO_SLUG_PREFIX . "%') t)"
+        );
+        echo "  dépôts de projets supprimés : $n\n";
+        $n = $pdo->exec("DELETE FROM incubated_projects WHERE slug LIKE '" . DEMO_SLUG_PREFIX . "%'");
+        echo "  projets incubés supprimés : $n\n";
+    }
+    if ($hasCalls) {
+        $n = $pdo->exec("DELETE FROM incubation_calls WHERE slug LIKE '" . DEMO_SLUG_PREFIX . "%'");
+        echo "  appels à incubation supprimés : $n\n";
+    }
     $n = $pdo->exec("DELETE FROM users WHERE email LIKE '%@" . DEMO_EMAIL_DOMAIN . "'");
     echo "  comptes supprimés : $n\n";
 
     // Fichiers orphelins marqués demo-*
-    foreach (['/storage/proofs', '/storage/cv', '/public/uploads/offres'] as $dir) {
+    $hasTestimonials = (bool) $pdo->query("SHOW TABLES LIKE 'testimonials'")->fetchColumn();
+    if ($hasTestimonials) {
+        $tmPhotos = $pdo->query(
+            "SELECT photo_path FROM testimonials
+              WHERE photo_path IS NOT NULL
+                AND author_name IN ('Afi Mensah', 'Koffi Mensah')
+                AND source = 'admin'"
+        )->fetchAll(PDO::FETCH_COLUMN);
+        foreach ($tmPhotos as $p) {
+            @unlink($root . '/public/uploads/temoignages/' . basename((string) $p));
+        }
+        $n = $pdo->exec(
+            "DELETE FROM testimonials
+              WHERE author_name IN ('Afi Mensah', 'Koffi Mensah') AND source = 'admin'"
+        );
+        echo "  témoignages démo supprimés : $n\n";
+    }
+
+    $hasGalleries = (bool) $pdo->query("SHOW TABLES LIKE 'formation_galleries'")->fetchColumn();
+    if ($hasGalleries) {
+        $galPaths = $pdo->query(
+            "SELECT path FROM formation_gallery_images
+              WHERE path LIKE 'demo-galerie-%' OR path LIKE 'affiche-%'"
+        )->fetchAll(PDO::FETCH_COLUMN);
+        foreach ($galPaths as $p) {
+            @unlink($root . '/public/uploads/galeries/' . basename((string) $p));
+        }
+        $n = $pdo->exec(
+            "DELETE FROM formation_galleries
+              WHERE title IN (
+                  'Formation PROCOPE 2027 — 1ère vague',
+                  'Bootcamp pitch — novembre 2026',
+                  'Entrepreneuriat & création d''entreprise',
+                  'Bootcamp pitch',
+                  'Femmes & innovation'
+              )"
+        );
+        echo "  albums galerie démo supprimés : $n\n";
+    }
+
+    foreach (['/storage/proofs', '/storage/cv', '/storage/projets', '/public/uploads/offres', '/public/uploads/projets', '/public/uploads/temoignages', '/public/uploads/galeries'] as $dir) {
         foreach (glob($root . $dir . '/' . DEMO_FILE_PREFIX . '*') ?: [] as $file) {
             @unlink($file);
         }
@@ -611,7 +693,466 @@ if ($nbCreated) {
 }
 
 // =====================================================================
-// 6. Compte operator de démo
+// 6. Trois chemins : appel + dépôts, spontanés, projet vitrine manuel
+// =====================================================================
+
+echo "-- Appels à incubation --\n";
+
+$hasCallsTable = (bool) Database::pdo()->query("SHOW TABLES LIKE 'incubation_calls'")->fetchColumn();
+$hasProjTable = (bool) Database::pdo()->query("SHOW TABLES LIKE 'incubated_projects'")->fetchColumn();
+$callId = null;
+
+if (!$hasCallsTable) {
+    echo "  SKIP : table incubation_calls absente (appliquer upgrade-009)\n";
+} else {
+    $existingCall = Database::run(
+        'SELECT id FROM incubation_calls WHERE slug = ?',
+        ['demo-appel-agritech']
+    )->fetchColumn();
+    if ($existingCall) {
+        $callId = (int) $existingCall;
+        $skipped[] = 'appel demo-appel-agritech';
+    } else {
+        Database::run(
+            'INSERT INTO incubation_calls
+                (title, slug, sector, description, opens_at, closes_at, is_published)
+             VALUES (?, ?, ?, ?, ?, ?, 1)',
+            [
+                'Appel AgriTech 2026',
+                'demo-appel-agritech',
+                'AgriTech',
+                "PROCOPE recherche des projets agri-tech à fort impact : circuits courts, accès au marché, climat.\n\nLes dossiers sont examinés jusqu'à la date de clôture.",
+                date('Y-m-d H:i:s', strtotime('-7 days')),
+                date('Y-m-d H:i:s', strtotime('+45 days')),
+            ]
+        );
+        $callId = (int) Database::pdo()->lastInsertId();
+        $created[] = 'appel demo-appel-agritech';
+    }
+}
+
+echo "-- Projets incubés (vitrine manuelle + issu d'un dépôt) --\n";
+
+if (!$hasProjTable) {
+    echo "  SKIP : tables projets absentes (appliquer upgrade-008)\n";
+} else {
+
+ensureDir($root . '/public/uploads/projets');
+ensureDir($root . '/storage/projets');
+
+$projectsDemo = [
+    [
+        'slug' => 'demo-agriconnect',
+        'title' => 'AgriConnect',
+        'pitch' => 'Plateforme mobile qui relie les agriculteurs locaux aux marchés urbains et raccourcit la chaîne d\'approvisionnement.',
+        'description' => "AgriConnect permet aux producteurs de publier leurs récoltes, de négocier un prix transparent et d'organiser la collecte.\n\nLe projet a été accompagné par PROCOPE sur le modèle économique, le pitch investisseurs et la mise en conformité fiscale.",
+        'sector' => 'AgriTech',
+        'stage' => 'lance',
+        'country' => 'Togo',
+        'year' => 2025,
+        'website' => null,
+        'socials' => null,
+        'is_published' => 1,
+        'archived' => false,
+        'images' => 2,
+        'application_id' => null,
+    ],
+    [
+        'slug' => 'demo-mobisante',
+        'title' => 'MobiSanté',
+        'pitch' => 'Application de suivi de santé maternelle et infantile pour les zones rurales.',
+        'description' => "MobiSanté envoie des rappels de vaccination et des conseils de suivi aux familles, en s'appuyant sur le réseau des agents de santé communautaire.",
+        'sector' => 'Santé',
+        'stage' => 'prototype',
+        'country' => 'Togo',
+        'year' => 2024,
+        'website' => null,
+        'socials' => null,
+        'is_published' => 0,
+        'archived' => true,
+        'images' => 1,
+        'application_id' => null,
+    ],
+];
+
+$projectIds = [];
+foreach ($projectsDemo as $p) {
+    $existing = Database::run('SELECT id FROM incubated_projects WHERE slug = ?', [$p['slug']])->fetchColumn();
+    if ($existing) {
+        $projectIds[$p['slug']] = (int) $existing;
+        $skipped[] = 'projet ' . $p['slug'];
+        continue;
+    }
+    $hasAppCol = (bool) Database::pdo()->query(
+        "SELECT COUNT(*) FROM information_schema.COLUMNS
+          WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'incubated_projects' AND COLUMN_NAME = 'application_id'"
+    )->fetchColumn();
+    if ($hasAppCol) {
+        Database::run(
+            'INSERT INTO incubated_projects
+                (application_id, title, slug, pitch, description, sector, stage, country, year, website, socials, is_published, archived_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [
+                $p['application_id'], $p['title'], $p['slug'], $p['pitch'], $p['description'], $p['sector'], $p['stage'],
+                $p['country'], $p['year'], $p['website'], $p['socials'], $p['is_published'],
+                $p['archived'] ? date('Y-m-d H:i:s', strtotime('-20 days')) : null,
+            ]
+        );
+    } else {
+        Database::run(
+            'INSERT INTO incubated_projects
+                (title, slug, pitch, description, sector, stage, country, year, website, socials, is_published, archived_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [
+                $p['title'], $p['slug'], $p['pitch'], $p['description'], $p['sector'], $p['stage'],
+                $p['country'], $p['year'], $p['website'], $p['socials'], $p['is_published'],
+                $p['archived'] ? date('Y-m-d H:i:s', strtotime('-20 days')) : null,
+            ]
+        );
+    }
+    $id = (int) Database::pdo()->lastInsertId();
+    $projectIds[$p['slug']] = $id;
+
+    for ($img = 1; $img <= $p['images']; $img++) {
+        $path = demoFileName('png');
+        makePng(
+            $root . '/public/uploads/projets/' . $path,
+            "Affiche $img — " . $p['title'],
+            800,
+            500
+        );
+        Database::run(
+            'INSERT INTO project_images (project_id, path, mime, is_main, sort_order) VALUES (?, ?, ?, ?, ?)',
+            [$id, $path, 'image/png', $img === 1 ? 1 : 0, $img]
+        );
+    }
+    $created[] = 'projet ' . $p['slug'] . ($p['images'] ? " ({$p['images']} affiche(s))" : '');
+}
+
+echo "-- Dépôts de projets (appel + spontanés) --\n";
+
+$hasCallCol = (bool) Database::pdo()->query(
+    "SELECT COUNT(*) FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'project_applications' AND COLUMN_NAME = 'call_id'"
+)->fetchColumn();
+
+$depots = [
+    [$callId, 'Afiwa Mensah', '+228 90 12 34 56', 'AgriCollecte Kara', 'AgriTech',
+     'Collecte groupée des cultures maraîchères dans la Kara.',
+     "Candidature à l'appel AgriTech pour structurer la logistique.", true, 'nouvelle'],
+    [$callId, 'Komlan Tchalla', '+228 91 23 45 67', 'Marché Paysan', 'AgriTech',
+     'Application de commandes groupées pour les marchés de Lomé.',
+     'Dossier déjà avancé, recherche de mentorat commercial.', true, 'en_examen'],
+    [null, 'Yawa Agbeko', '+228 92 34 56 78', 'RecycloTogo', 'Environnement',
+     'Collecte et transformation de plastiques en pavés.',
+     'Candidature spontanée, hors appel.', false, 'nouvelle'],
+    [null, 'Kossiwa Dake', '+228 93 45 67 89', 'MobiSanté Relais', 'Santé',
+     'Relais communautaires pour le suivi des vaccinations.',
+     'Dossier spontané retenu, à publier sur le portfolio.', true, 'retenue'],
+];
+
+$nbCreated = 0;
+$retainedId = null;
+foreach ($depots as $i => [$cid, $name, $phone, $projectName, $sector, $pitch, $message, $withFile, $statut]) {
+    $email = demoEmail($name);
+    if ($hasCallCol) {
+        $exists = Database::run(
+            'SELECT id FROM project_applications WHERE email = ? AND '
+            . ($cid === null ? 'call_id IS NULL' : 'call_id = ?'),
+            $cid === null ? [$email] : [$email, $cid]
+        )->fetch();
+    } else {
+        $exists = Database::run(
+            'SELECT id FROM project_applications WHERE email = ?',
+            [$email]
+        )->fetch();
+    }
+    if ($exists) {
+        if ($statut === 'retenue') {
+            $retainedId = (int) $exists['id'];
+        }
+        $skipped[] = "dépôt $email";
+        continue;
+    }
+
+    $filePath = null;
+    if ($withFile) {
+        $filePath = demoFileName('pdf');
+        makePdf($root . '/storage/projets/' . $filePath, [
+            'PITCH DECK - DEMONSTRATION',
+            $name,
+            $projectName,
+            '',
+            $pitch,
+            '',
+            'Document factice genere par bin/seed-demo.php',
+        ]);
+    }
+
+    if ($hasCallCol) {
+        Database::run(
+            'INSERT INTO project_applications
+                (project_id, call_id, full_name, email, phone, project_name, sector, pitch, message,
+                 file_path, file_mime, file_name, statut, ip, user_agent, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [
+                null, $cid, $name, $email, $phone, $projectName, $sector, $pitch, $message,
+                $filePath, $filePath ? 'application/pdf' : null,
+                $filePath ? 'pitch-' . strtolower(strtok($name, ' ')) . '.pdf' : null,
+                $statut, '127.0.0.1', 'seed-demo',
+                date('Y-m-d H:i:s', strtotime('-' . (1 + $i) . ' days')),
+            ]
+        );
+    } else {
+        Database::run(
+            'INSERT INTO project_applications
+                (project_id, full_name, email, phone, project_name, sector, pitch, message,
+                 file_path, file_mime, file_name, statut, ip, user_agent, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [
+                null, $name, $email, $phone, $projectName, $sector, $pitch, $message,
+                $filePath, $filePath ? 'application/pdf' : null,
+                $filePath ? 'pitch-' . strtolower(strtok($name, ' ')) . '.pdf' : null,
+                $statut, '127.0.0.1', 'seed-demo',
+                date('Y-m-d H:i:s', strtotime('-' . (1 + $i) . ' days')),
+            ]
+        );
+    }
+    $newId = (int) Database::pdo()->lastInsertId();
+    if ($statut === 'retenue') {
+        $retainedId = $newId;
+    }
+    $nbCreated++;
+}
+if ($nbCreated) {
+    $created[] = "$nbCreated dépôt(s) de projets";
+}
+
+$hasAppColLinked = (bool) Database::pdo()->query(
+    "SELECT COUNT(*) FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'incubated_projects' AND COLUMN_NAME = 'application_id'"
+)->fetchColumn();
+if ($hasAppColLinked && $retainedId && empty(Database::run(
+    'SELECT id FROM incubated_projects WHERE slug = ?',
+    ['demo-mobisante-relais']
+)->fetchColumn())) {
+    Database::run(
+        'INSERT INTO incubated_projects
+            (application_id, title, slug, pitch, description, sector, stage, country, year, website, socials, is_published)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)',
+        [
+            $retainedId,
+            'MobiSanté Relais',
+            'demo-mobisante-relais',
+            'Relais communautaires pour le suivi des vaccinations.',
+            'Fiche préremplie depuis un dépôt spontané retenu. À compléter puis publier.',
+            'Santé',
+            'idee',
+            'Togo',
+            (int) date('Y'),
+            null,
+            null,
+        ]
+    );
+    $linkedId = (int) Database::pdo()->lastInsertId();
+    Database::run('UPDATE project_applications SET project_id = ? WHERE id = ?', [$linkedId, $retainedId]);
+    $created[] = 'fiche liée demo-mobisante-relais (brouillon depuis dépôt retenu)';
+}
+
+} // fin if ($hasProjTable)
+
+// =====================================================================
+// 7b. Témoignages publiés (carousel public)
+// =====================================================================
+
+$hasTmTable = (bool) Database::pdo()->query("SHOW TABLES LIKE 'testimonials'")->fetchColumn();
+if ($hasTmTable) {
+    echo "-- Témoignages --\n";
+    $tmDir = $root . '/public/uploads/temoignages';
+    if (!is_dir($tmDir)) {
+        mkdir($tmDir, 0755, true);
+    }
+    $tmDemos = [
+        [
+            'author_name' => 'Afi Mensah',
+            'role_title'  => 'Participante à la formation entrepreneuriat',
+            'quote'       => "L'accompagnement de PROCOPE a été un véritable tremplin pour notre projet. "
+                . "Le mentorat et l'accès au réseau nous ont ouvert des portes inestimables.",
+            'photo'       => 'demo-afi-temoignage.png',
+        ],
+        [
+            'author_name' => 'Koffi Mensah',
+            'role_title'  => 'Porteur de projet incubé',
+            'quote'       => "Grâce aux formations de PROCOPE, nous avons pu structurer notre business model "
+                . "et convaincre nos premiers partenaires. Une expérience transformatrice.",
+            'photo'       => null,
+        ],
+    ];
+    $tmCreated = 0;
+    foreach ($tmDemos as $tm) {
+        if (Database::run(
+            "SELECT id FROM testimonials WHERE author_name = ? AND source = 'admin' LIMIT 1",
+            [$tm['author_name']]
+        )->fetchColumn()) {
+            $skipped[] = 'témoignage ' . $tm['author_name'];
+            continue;
+        }
+        $photoPath = null;
+        $photoMime = null;
+        if ($tm['photo']) {
+            makePng($tmDir . '/' . $tm['photo'], 'Temoignage ' . $tm['author_name'], 240, 240);
+            $photoPath = $tm['photo'];
+            $photoMime = 'image/png';
+        }
+        Database::run(
+            "INSERT INTO testimonials
+                (author_name, role_title, quote, photo_path, photo_mime, source, statut, published_at)
+             VALUES (?, ?, ?, ?, ?, 'admin', 'publie', NOW())",
+            [$tm['author_name'], $tm['role_title'], $tm['quote'], $photoPath, $photoMime]
+        );
+        $tmCreated++;
+    }
+    if ($tmCreated) {
+        $created[] = "$tmCreated témoignage(s) publié(s)";
+    }
+}
+
+// =====================================================================
+// 7c. Galeries photos (page Actualités)
+// =====================================================================
+
+$hasGalTable = (bool) Database::pdo()->query("SHOW TABLES LIKE 'formation_galleries'")->fetchColumn();
+if ($hasGalTable) {
+    echo "-- Galeries --\n";
+    $galDir = $root . '/public/uploads/galeries';
+    ensureDir($galDir);
+    $fid2027 = Database::run(
+        "SELECT id FROM formations WHERE slug = 'formation-procope-2027-vague-1' LIMIT 1"
+    )->fetchColumn();
+    $hasKind = (bool) Database::pdo()->query(
+        "SELECT COUNT(*) FROM information_schema.COLUMNS
+          WHERE TABLE_SCHEMA = DATABASE()
+            AND TABLE_NAME = 'formation_galleries' AND COLUMN_NAME = 'kind'"
+    )->fetchColumn();
+    $albumSpecs = [
+        [
+            'title' => 'Formation PROCOPE 2027 — 1ère vague',
+            'year'  => 2027,
+            'month' => 1,
+            'kind'  => 'photos',
+            'formation_id' => $fid2027 ? (int) $fid2027 : null,
+            'description' => 'Photos prises pendant la première vague de formation PROCOPE, janvier 2027 à Lomé.',
+            'images' => [
+                ['demo-galerie-2027-01.png', 'Atelier en salle — structurer son projet'],
+                ['demo-galerie-2027-02.png', 'Travaux de groupe — business model'],
+                ['demo-galerie-2027-03.png', 'Pitch des participants devant le jury'],
+                ['demo-galerie-2027-04.png', 'Remise des attestations — clôture'],
+            ],
+        ],
+        [
+            'title' => 'Bootcamp pitch — novembre 2026',
+            'year'  => 2026,
+            'month' => 11,
+            'kind'  => 'photos',
+            'formation_id' => null,
+            'description' => 'Photos du bootcamp pitch de novembre 2026 à Lomé.',
+            'images' => [
+                ['demo-galerie-2026-01.png', 'Préparation des pitchs'],
+                ['demo-galerie-2026-02.png', 'Présentation devant les mentors'],
+            ],
+        ],
+        [
+            'title' => 'Entrepreneuriat & création d\'entreprise',
+            'year'  => 2025,
+            'month' => 3,
+            'kind'  => 'affiche',
+            'formation_id' => null,
+            'description' => 'Mars 2025 · Lomé',
+            'images' => [
+                ['affiche-1.png', 'Entrepreneuriat & création d\'entreprise'],
+            ],
+        ],
+        [
+            'title' => 'Bootcamp pitch',
+            'year'  => 2024,
+            'month' => 11,
+            'kind'  => 'affiche',
+            'formation_id' => null,
+            'description' => 'Novembre 2024 · Lomé',
+            'images' => [
+                ['affiche-2.png', 'Bootcamp pitch'],
+            ],
+        ],
+        [
+            'title' => 'Femmes & innovation',
+            'year'  => 2024,
+            'month' => 6,
+            'kind'  => 'affiche',
+            'formation_id' => null,
+            'description' => 'Juin 2024 · Lomé',
+            'images' => [
+                ['affiche-3.png', 'Femmes & innovation'],
+            ],
+        ],
+    ];
+    $imgRoot = dirname($root) . '/img';
+    foreach ($albumSpecs as $spec) {
+        if ($spec['kind'] === 'affiche' && !$hasKind) {
+            continue;
+        }
+        $existing = Database::run(
+            $hasKind
+                ? 'SELECT id FROM formation_galleries WHERE title = ? AND year = ? AND kind = ? LIMIT 1'
+                : 'SELECT id FROM formation_galleries WHERE title = ? AND year = ? LIMIT 1',
+            $hasKind
+                ? [$spec['title'], $spec['year'], $spec['kind']]
+                : [$spec['title'], $spec['year']]
+        )->fetchColumn();
+        if ($existing) {
+            $skipped[] = 'album ' . $spec['title'];
+            continue;
+        }
+        if ($hasKind) {
+            Database::run(
+                'INSERT INTO formation_galleries
+                    (formation_id, title, year, month, description, kind, is_published)
+                 VALUES (?, ?, ?, ?, ?, ?, 1)',
+                [$spec['formation_id'], $spec['title'], $spec['year'], $spec['month'], $spec['description'], $spec['kind']]
+            );
+        } else {
+            Database::run(
+                'INSERT INTO formation_galleries
+                    (formation_id, title, year, month, description, is_published)
+                 VALUES (?, ?, ?, ?, ?, 1)',
+                [$spec['formation_id'], $spec['title'], $spec['year'], $spec['month'], $spec['description']]
+            );
+        }
+        $gid = (int) Database::pdo()->lastInsertId();
+        $order = 1;
+        foreach ($spec['images'] as [$file, $caption]) {
+            $mime = 'image/png';
+            $srcJpg = $imgRoot . '/' . preg_replace('/\.png$/', '.jpg', $file);
+            if (($spec['kind'] ?? '') === 'affiche' && is_file($srcJpg)) {
+                $file = preg_replace('/\.png$/', '.jpg', $file);
+                copy($srcJpg, $galDir . '/' . $file);
+                $mime = 'image/jpeg';
+            } elseif (($spec['kind'] ?? '') === 'affiche') {
+                makePng($galDir . '/' . $file, $caption, 720, 960);
+            } else {
+                makePng($galDir . '/' . $file, $caption, 960, 640);
+            }
+            Database::run(
+                'INSERT INTO formation_gallery_images (gallery_id, path, mime, caption, sort_order)
+                 VALUES (?, ?, ?, ?, ?)',
+                [$gid, $file, $mime, $caption, $order++]
+            );
+        }
+        $created[] = 'album ' . $spec['title'];
+    }
+}
+
+// =====================================================================
+// 7. Compte operator de démo
 // =====================================================================
 
 echo "-- Comptes --\n";

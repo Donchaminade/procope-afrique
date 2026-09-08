@@ -12,13 +12,18 @@ use App\Controllers\Admin\AuthController;
 use App\Controllers\Admin\AutomationsController;
 use App\Controllers\Admin\DashboardController;
 use App\Controllers\Admin\FormationsController;
+use App\Controllers\Admin\GalleriesController;
 use App\Controllers\Admin\InscriptionsController;
 use App\Controllers\Admin\JobApplicationsController;
 use App\Controllers\Admin\JobOffersController;
 use App\Controllers\Admin\MessagesController;
+use App\Controllers\Admin\IncubationCallsController;
+use App\Controllers\Admin\ProjectApplicationsController;
+use App\Controllers\Admin\ProjectsController;
 use App\Controllers\Admin\UsersController;
 use App\Controllers\Admin\SettingsController;
 use App\Controllers\Admin\SurveillanceController;
+use App\Controllers\Admin\TestimonialsController;
 use App\Middleware\AuthMiddleware;
 use App\Middleware\CsrfMiddleware;
 use App\Middleware\AdminRole;
@@ -98,6 +103,16 @@ $router->post('/api/contacts', [PublicController::class, 'createContact']);
 $router->get('/api/offres', [PublicController::class, 'listOffers']);
 $router->get('/api/offres/{slug}', [PublicController::class, 'showOffer']);
 $router->post('/api/offres/{slug}/postuler', [PublicController::class, 'applyToOffer']);
+$router->get('/api/projets', [PublicController::class, 'listProjects']);
+$router->get('/api/projets/{slug}', [PublicController::class, 'showProject']);
+$router->post('/api/projets/depot', [PublicController::class, 'applyToProject']);
+$router->post('/api/projets/{slug}/depot', [PublicController::class, 'applyToProject']);
+$router->get('/api/appels', [PublicController::class, 'listCalls']);
+$router->get('/api/appels/{slug}', [PublicController::class, 'showCall']);
+$router->post('/api/appels/{slug}/depot', [PublicController::class, 'applyToCall']);
+$router->get('/api/temoignages', [PublicController::class, 'listTestimonials']);
+$router->post('/api/temoignages', [PublicController::class, 'createTestimonial']);
+$router->get('/api/galeries', [PublicController::class, 'listGalleries']);
 
 // Auth admin
 $router->get('/admin/login', [AuthController::class, 'showLogin']);
@@ -120,6 +135,18 @@ $router->post('/admin/formations/{id}/toggle', [FormationsController::class, 'to
 $router->post('/admin/formations/{id}/delete', [FormationsController::class, 'destroy'], $adminPost);
 $router->post('/admin/formations/{id}/archive', [FormationsController::class, 'archive'], $adminPost);
 $router->post('/admin/formations/{id}/announce', [FormationsController::class, 'announce'], $adminPost);
+
+$router->get('/admin/galeries', [GalleriesController::class, 'index'], $auth);
+$router->get('/admin/galeries/create', [GalleriesController::class, 'create'], [AuthMiddleware::class, AdminRole::class]);
+$router->post('/admin/galeries', [GalleriesController::class, 'store'], $adminPost);
+$router->get('/admin/galeries/{id}/edit', [GalleriesController::class, 'edit'], [AuthMiddleware::class, AdminRole::class]);
+$router->post('/admin/galeries/{id}/images', [GalleriesController::class, 'uploadImages'], $adminPost);
+$router->post('/admin/galeries/{id}/images/{img}/delete', [GalleriesController::class, 'deleteImage'], $adminPost);
+$router->post('/admin/galeries/{id}/images/{img}/up', [GalleriesController::class, 'moveImageUp'], $adminPost);
+$router->post('/admin/galeries/{id}/images/{img}/down', [GalleriesController::class, 'moveImageDown'], $adminPost);
+$router->post('/admin/galeries/{id}', [GalleriesController::class, 'update'], $adminPost);
+$router->post('/admin/galeries/{id}/publish', [GalleriesController::class, 'publish'], $adminPost);
+$router->post('/admin/galeries/{id}/delete', [GalleriesController::class, 'destroy'], $adminPost);
 
 // Offres d'emploi + candidatures (réservé admin et super admin)
 $adminGet = [AuthMiddleware::class, AdminRole::class];
@@ -148,12 +175,49 @@ $router->get('/admin/emplois/{id}/candidatures', [JobApplicationsController::cla
 $router->get('/admin/emplois/{id}/candidatures/export', [JobApplicationsController::class, 'export'], $adminGet);
 $router->get('/admin/emplois/{id}/candidatures/pdf', [JobApplicationsController::class, 'exportPdf'], $adminGet);
 
+// Appels à incubation + projets incubés + dépôts (admin+)
+$router->get('/admin/appels', [IncubationCallsController::class, 'index'], $adminGet);
+$router->get('/admin/appels/create', [IncubationCallsController::class, 'create'], $adminGet);
+$router->post('/admin/appels', [IncubationCallsController::class, 'store'], $adminPost);
+$router->get('/admin/appels/{id}/edit', [IncubationCallsController::class, 'edit'], $adminGet);
+$router->post('/admin/appels/{id}', [IncubationCallsController::class, 'update'], $adminPost);
+$router->post('/admin/appels/{id}/publish', [IncubationCallsController::class, 'publish'], $adminPost);
+$router->post('/admin/appels/{id}/archive', [IncubationCallsController::class, 'archive'], $adminPost);
+$router->post('/admin/appels/{id}/delete', [IncubationCallsController::class, 'destroy'], $adminPost);
+
+$router->get('/admin/projets', [ProjectsController::class, 'index'], $adminGet);
+$router->get('/admin/projets/create', [ProjectsController::class, 'create'], $adminGet);
+$router->post('/admin/projets', [ProjectsController::class, 'store'], $adminPost);
+$router->get('/admin/projets/depots', [ProjectApplicationsController::class, 'indexAll'], $adminGet);
+$router->get('/admin/projets/depots/export', [ProjectApplicationsController::class, 'exportAll'], $adminGet);
+$router->get('/admin/projets/depots/pdf', [ProjectApplicationsController::class, 'exportAllPdf'], $adminGet);
+$router->get('/admin/projets/depots/{id}', [ProjectApplicationsController::class, 'show'], $adminGet);
+$router->post('/admin/projets/depots/{id}/status', [ProjectApplicationsController::class, 'updateStatus'], $adminPost);
+$router->post('/admin/projets/depots/{id}/prepare', [ProjectApplicationsController::class, 'preparePublish'], $adminPost);
+$router->post('/admin/projets/depots/{id}/delete', [ProjectApplicationsController::class, 'destroy'], $adminPost);
+$router->get('/admin/projets/depots/{id}/fichier', [ProjectApplicationsController::class, 'fichierPage'], $adminGet);
+$router->get('/admin/projets/depots/{id}/fichier/fichier', [ProjectApplicationsController::class, 'fichier'], $adminGet);
+$router->get('/admin/projets/{id}/edit', [ProjectsController::class, 'edit'], $adminGet);
+$router->post('/admin/projets/{id}/images', [ProjectsController::class, 'uploadImages'], $adminPost);
+$router->post('/admin/projets/{id}/images/{img}/main', [ProjectsController::class, 'setMainImage'], $adminPost);
+$router->post('/admin/projets/{id}/images/{img}/delete', [ProjectsController::class, 'deleteImage'], $adminPost);
+$router->post('/admin/projets/{id}', [ProjectsController::class, 'update'], $adminPost);
+$router->post('/admin/projets/{id}/publish', [ProjectsController::class, 'publish'], $adminPost);
+$router->post('/admin/projets/{id}/archive', [ProjectsController::class, 'archive'], $adminPost);
+$router->post('/admin/projets/{id}/delete', [ProjectsController::class, 'destroy'], $adminPost);
+$router->post('/admin/projets/{id}/announce', [ProjectsController::class, 'announce'], $adminPost);
+
 $router->get('/admin/archives', [ArchivesController::class, 'index'], $auth);
 // Archives des offres d'emploi (routes fixes AVANT archives/{id})
 $router->get('/admin/archives/emplois/{id}', [ArchivesController::class, 'showOffer'], $adminGet);
 $router->get('/admin/archives/emplois/{id}/export', [ArchivesController::class, 'exportOffer'], $adminGet);
 $router->get('/admin/archives/emplois/{id}/pdf', [ArchivesController::class, 'exportOfferPdf'], $adminGet);
 $router->post('/admin/archives/emplois/{id}/restore', [ArchivesController::class, 'restoreOffer'], $adminPost);
+$router->get('/admin/archives/projets/{id}', [ArchivesController::class, 'showProject'], $adminGet);
+$router->get('/admin/archives/projets/{id}/export', [ArchivesController::class, 'exportProject'], $adminGet);
+$router->get('/admin/archives/projets/{id}/pdf', [ArchivesController::class, 'exportProjectPdf'], $adminGet);
+$router->post('/admin/archives/projets/{id}/restore', [ArchivesController::class, 'restoreProject'], $adminPost);
+$router->post('/admin/archives/appels/{id}/restore', [ArchivesController::class, 'restoreCall'], $adminPost);
 $router->get('/admin/archives/{id}', [ArchivesController::class, 'show'], $auth);
 $router->post('/admin/archives/{id}/restore', [ArchivesController::class, 'restore'], $adminPost);
 
@@ -165,9 +229,22 @@ $router->post('/admin/inscriptions/{id}/validate-payment', [InscriptionsControll
 $router->post('/admin/inscriptions/{id}/send-mail', [InscriptionsController::class, 'sendMail'], $authPost);
 $router->get('/admin/inscriptions/{id}/proof', [InscriptionsController::class, 'proof'], $auth);
 
+$router->get('/admin/temoignages', [TestimonialsController::class, 'index'], $auth);
+$router->get('/admin/temoignages/create', [TestimonialsController::class, 'create'], $auth);
+$router->post('/admin/temoignages', [TestimonialsController::class, 'store'], $authPost);
+$router->get('/admin/temoignages/{id}', [TestimonialsController::class, 'show'], $auth);
+$router->get('/admin/temoignages/{id}/edit', [TestimonialsController::class, 'edit'], $auth);
+$router->post('/admin/temoignages/{id}', [TestimonialsController::class, 'update'], $authPost);
+$router->post('/admin/temoignages/{id}/publish', [TestimonialsController::class, 'publish'], $authPost);
+$router->post('/admin/temoignages/{id}/refuse', [TestimonialsController::class, 'refuse'], $authPost);
+$router->post('/admin/temoignages/{id}/delete', [TestimonialsController::class, 'destroy'], $authPost);
+
 $router->get('/admin/messages', [MessagesController::class, 'index'], $auth);
+$router->post('/admin/messages/delete-batch', [MessagesController::class, 'deleteBatch'], $authPost);
 $router->get('/admin/messages/{id}', [MessagesController::class, 'show'], $auth);
 $router->post('/admin/messages/{id}/status', [MessagesController::class, 'updateStatus'], $authPost);
+$router->post('/admin/messages/{id}/reply', [MessagesController::class, 'reply'], $adminPost);
+$router->post('/admin/messages/{id}/preview-reply', [MessagesController::class, 'previewReply'], $adminPost);
 $router->post('/admin/messages/{id}/delete', [MessagesController::class, 'destroy'], $authPost);
 
 $router->get('/admin/automations', [AutomationsController::class, 'index'], [AuthMiddleware::class, AdminRole::class]);

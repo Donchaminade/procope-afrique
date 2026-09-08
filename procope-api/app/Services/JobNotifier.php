@@ -7,6 +7,7 @@ use App\Models\Inscription;
 use App\Models\JobApplication;
 use App\Models\JobOffer;
 use App\Models\JobOfferImage;
+use App\Models\ProjectApplication;
 use App\Models\Setting;
 
 /**
@@ -28,7 +29,11 @@ final class JobNotifier
      */
     public static function recipients(): array
     {
-        $emails = array_merge(Inscription::allEmails(), JobApplication::allEmails());
+        $emails = array_merge(
+            Inscription::allEmails(),
+            JobApplication::allEmails(),
+            ProjectApplication::allEmails()
+        );
         $emails = array_values(array_unique(array_map('mb_strtolower', $emails)));
         sort($emails);
         return $emails;
@@ -37,7 +42,7 @@ final class JobNotifier
     /** URL publique de la page de détail d'une offre. */
     public static function offerUrl(array $offer): string
     {
-        return rtrim((string) Env::get('SITE_URL', 'https://procopeafrique.vercel.app'), '/')
+        return rtrim((string) Env::get('SITE_URL', 'https://procopeafrique.org'), '/')
             . '/offres-emploi.html#' . rawurlencode((string) $offer['slug']);
     }
 

@@ -7,6 +7,7 @@ use App\Core\Request;
 use App\Core\Response;
 use App\Core\View;
 use App\Models\Formation;
+use App\Models\IncubatedProject;
 use App\Models\JobOffer;
 use App\Models\MailLog;
 use App\Models\MailTemplate;
@@ -77,8 +78,8 @@ final class AutomationsController
         ],
         'nouvelle_formation' => [
             'label'       => "Annonce d'une nouvelle formation",
-            'description' => "Prévient les anciens participants et les candidats aux offres d'emploi "
-                . "qu'une nouvelle formation est disponible (e-mails dédupliqués).",
+            'description' => "Prévient les anciens participants, les candidats aux offres d'emploi "
+                . "et les porteurs de projets incubés qu'une nouvelle formation est disponible (e-mails dédupliqués).",
             'recipient'   => 'anciens',
             'trigger'     => "Création d'une formation ouverte",
             'template'    => 'annonce',
@@ -135,6 +136,57 @@ final class AutomationsController
             'trigger'     => 'Candidature passée au statut « Refusée »',
             'template'    => 'candidature_refusee',
             'icon'        => 'x-circle',
+        ],
+        'projet_publie' => [
+            'label'       => "Annonce d'un projet incubé",
+            'description' => "Diffuse chaque nouveau projet publié à toute la communauté "
+                . "(participants, candidats emploi et dépôts de projets).",
+            'recipient'   => 'communaute',
+            'trigger'     => "Publication d'un projet (création publiée ou passage à publié)",
+            'template'    => 'projet_publie',
+            'icon'        => 'rocket',
+        ],
+        'depot_projet' => [
+            'label'       => 'Accusé de réception de dépôt',
+            'description' => 'Confirme au porteur que son dépôt de projet a bien été reçu.',
+            'recipient'   => 'candidat',
+            'trigger'     => 'Nouveau dépôt de projet (lié ou spontané)',
+            'template'    => 'depot_projet',
+            'icon'        => 'check-circle',
+        ],
+        'depot_retenu' => [
+            'label'       => 'Dépôt retenu (prochaine phase)',
+            'description' => 'Félicite le porteur dont le dossier est retenu. '
+                . 'Envoyé uniquement quand le statut CHANGE vers « Retenue ».',
+            'recipient'   => 'candidat',
+            'trigger'     => 'Dépôt passé au statut « Retenue »',
+            'template'    => 'depot_retenu',
+            'icon'        => 'star',
+        ],
+        'depot_refuse' => [
+            'label'       => 'Dépôt non retenu',
+            'description' => 'Message respectueux au porteur non retenu. '
+                . 'Envoyé uniquement quand le statut CHANGE vers « Refusée ».',
+            'recipient'   => 'candidat',
+            'trigger'     => 'Dépôt passé au statut « Refusée »',
+            'template'    => 'depot_refuse',
+            'icon'        => 'x-circle',
+        ],
+        'temoignage_recu' => [
+            'label'       => 'Accusé de réception de témoignage',
+            'description' => 'Confirme à l\'auteur que son témoignage a bien été reçu et qu\'il sera lu avant publication.',
+            'recipient'   => 'auteur',
+            'trigger'     => 'Nouveau témoignage (si un e-mail a été indiqué)',
+            'template'    => 'temoignage_recu',
+            'icon'        => 'check-circle',
+        ],
+        'temoignage_alerte' => [
+            'label'       => 'Alerte nouveau témoignage',
+            'description' => "Prévient l'équipe qu'un témoignage public attend une validation.",
+            'recipient'   => 'equipe',
+            'trigger'     => 'Nouveau témoignage reçu via le site',
+            'template'    => 'temoignage_alerte',
+            'icon'        => 'chat-bubble',
         ],
     ];
 
@@ -218,6 +270,54 @@ final class AutomationsController
             'description' => 'Message respectueux qui remercie le candidat et l\'encourage à repostuler.',
             'variables'   => 'full_name, title, contract_type, location',
             'recipient'   => 'candidat',
+        ],
+        'projet_publie' => [
+            'label'       => "Annonce d'un projet incubé",
+            'description' => 'Diffusion d\'un nouveau projet publié : titre, secteur, stade et bouton « Voir le projet ».',
+            'variables'   => 'title, sector, stage, country, extrait, cta_url',
+            'recipient'   => 'communaute',
+        ],
+        'depot_projet' => [
+            'label'       => 'Accusé de réception de dépôt',
+            'description' => 'Confirme au porteur la bonne réception de son dossier d\'incubation.',
+            'variables'   => 'full_name, project_name, title',
+            'recipient'   => 'candidat',
+        ],
+        'depot_alerte' => [
+            'label'       => 'Alerte interne — nouveau dépôt',
+            'description' => "Fiche récapitulative envoyée à l'équipe à chaque dépôt reçu.",
+            'variables'   => 'depot_id, full_name, email, phone, project_name, sector, pitch, message, fichier, title',
+            'recipient'   => 'equipe',
+        ],
+        'depot_retenu' => [
+            'label'       => 'Dépôt retenu (prochaine phase)',
+            'description' => 'Félicitations au porteur retenu : suite du processus et contact.',
+            'variables'   => 'full_name, project_name, title',
+            'recipient'   => 'candidat',
+        ],
+        'depot_refuse' => [
+            'label'       => 'Dépôt non retenu',
+            'description' => 'Message respectueux qui remercie le porteur et l\'encourage à redéposer.',
+            'variables'   => 'full_name, project_name, title',
+            'recipient'   => 'candidat',
+        ],
+        'message_reply' => [
+            'label'       => 'Réponse à un message de contact',
+            'description' => 'Cadre e-mail PROCOPE autour de la réponse saisie depuis Messages (corps libre sanitisé).',
+            'variables'   => 'name',
+            'recipient'   => 'contact',
+        ],
+        'temoignage_recu' => [
+            'label'       => 'Accusé de réception de témoignage',
+            'description' => 'Confirme à l\'auteur la bonne réception de son témoignage (publication après relecture).',
+            'variables'   => 'name, role, quote',
+            'recipient'   => 'auteur',
+        ],
+        'temoignage_alerte' => [
+            'label'       => 'Alerte interne — nouveau témoignage',
+            'description' => "Fiche récapitulative envoyée à l'équipe à chaque témoignage public.",
+            'variables'   => 'testimonial_id, name, email, role, quote, photo',
+            'recipient'   => 'equipe',
         ],
         'test' => [
             'label'       => 'E-mail de test',
@@ -393,6 +493,82 @@ final class AutomationsController
                     . "<p>Avec tous nos encouragements,<br><strong>L'équipe PROCOPE Afrique</strong></p>",
                 'variables' => ['full_name', 'title', 'contract_type', 'location'],
             ],
+            'projet_publie' => [
+                'subject'   => 'Nouveau projet incubé — {{title}}',
+                'body'      => "<p>Bonjour,</p>\n"
+                    . "<p>PROCOPE Afrique accompagne un nouveau projet. Découvrez-le et, si vous portez une idée, déposez la vôtre en ligne.</p>\n"
+                    . "<p><strong>{{title}}</strong></p>\n"
+                    . "<p>{{extrait}}</p>\n"
+                    . "<p><strong>Secteur :</strong> {{sector}}<br>"
+                    . "<strong>Stade :</strong> {{stage}}<br>"
+                    . "<strong>Pays :</strong> {{country}}</p>\n"
+                    . "<p>À très bientôt,<br><strong>L'équipe PROCOPE Afrique</strong></p>",
+                'variables' => ['title', 'sector', 'stage', 'country', 'extrait', 'cta_url'],
+            ],
+            'depot_projet' => [
+                'subject'   => 'Votre dépôt de projet — PROCOPE Afrique',
+                'body'      => "<p><strong>Dépôt bien reçu, {{full_name}} !</strong></p>\n"
+                    . "<p>Nous avons bien reçu votre dossier d'incubation pour le projet <strong>{{project_name}}</strong>.</p>\n"
+                    . "<p>Notre équipe étudie chaque pitch avec attention. Si votre projet est retenu, nous vous recontacterons.</p>\n"
+                    . "<p>À bientôt,<br><strong>L'équipe PROCOPE Afrique</strong></p>",
+                'variables' => ['full_name', 'project_name', 'title'],
+            ],
+            'depot_alerte' => [
+                'subject'   => 'Nouveau dépôt de projet — {{full_name}}',
+                'body'      => "<p><strong>Nouveau dépôt de projet</strong></p>\n"
+                    . "<p><strong>Projet incubé lié :</strong> {{title}}<br>\n"
+                    . "<strong>Nom du projet porté :</strong> {{project_name}}<br>\n"
+                    . "<strong>Nom :</strong> {{full_name}}<br>\n"
+                    . "<strong>E-mail :</strong> {{email}}<br>\n"
+                    . "<strong>Téléphone :</strong> {{phone}}<br>\n"
+                    . "<strong>Pitch deck :</strong> {{fichier}}</p>\n"
+                    . "<p><strong>Pitch :</strong><br>{{pitch}}</p>\n"
+                    . "<p>Consultez le détail dans le back-office : Admin → Projets incubés → Dépôts → #{{depot_id}}</p>",
+                'variables' => ['depot_id', 'full_name', 'email', 'phone', 'project_name', 'sector', 'pitch', 'message', 'fichier', 'title'],
+            ],
+            'depot_retenu' => [
+                'subject'   => 'Votre dépôt est retenu — PROCOPE Afrique',
+                'body'      => "<p><strong>Félicitations, {{full_name}} !</strong></p>\n"
+                    . "<p>Votre dossier d'incubation a été retenu pour la prochaine phase (projet <strong>{{project_name}}</strong>).</p>\n"
+                    . "<p>Notre équipe vous recontactera très prochainement pour préciser la suite.</p>\n"
+                    . "<p>À très bientôt,<br><strong>L'équipe PROCOPE Afrique</strong></p>",
+                'variables' => ['full_name', 'project_name', 'title'],
+            ],
+            'depot_refuse' => [
+                'subject'   => 'Suite de votre dépôt — PROCOPE Afrique',
+                'body'      => "<p>Bonjour {{full_name}},</p>\n"
+                    . "<p>Nous vous remercions pour votre dépôt (projet <strong>{{project_name}}</strong>).</p>\n"
+                    . "<p>Après étude, nous ne pouvons pas donner de suite favorable pour cette session. "
+                    . "Nous vous encourageons à redéposer lors d'une prochaine vague.</p>\n"
+                    . "<p>Avec tous nos encouragements,<br><strong>L'équipe PROCOPE Afrique</strong></p>",
+                'variables' => ['full_name', 'project_name', 'title'],
+            ],
+            'message_reply' => [
+                'subject'   => 'Réponse — PROCOPE Afrique',
+                'body'      => "<p>Bonjour {{name}},</p>\n"
+                    . "<p>Merci pour votre message. Voici notre réponse.</p>\n"
+                    . "<p>Cordialement,<br><strong>L'équipe PROCOPE Afrique</strong></p>",
+                'variables' => ['name'],
+            ],
+            'temoignage_recu' => [
+                'subject'   => 'Votre témoignage — PROCOPE Afrique',
+                'body'      => "<p><strong>Merci, {{name}} !</strong></p>\n"
+                    . "<p>Nous avons bien reçu votre témoignage.</p>\n"
+                    . "<p>L'équipe le lira avant toute publication sur le site.</p>\n"
+                    . "<p>À bientôt,<br><strong>L'équipe PROCOPE Afrique</strong></p>",
+                'variables' => ['name', 'role', 'quote'],
+            ],
+            'temoignage_alerte' => [
+                'subject'   => 'Nouveau témoignage — {{name}}',
+                'body'      => "<p><strong>Nouveau témoignage à modérer</strong></p>\n"
+                    . "<p><strong>Nom :</strong> {{name}}<br>\n"
+                    . "<strong>Rôle :</strong> {{role}}<br>\n"
+                    . "<strong>E-mail :</strong> {{email}}<br>\n"
+                    . "<strong>Photo :</strong> {{photo}}</p>\n"
+                    . "<p><strong>Témoignage :</strong><br>{{quote}}</p>\n"
+                    . "<p>Admin → Témoignages → #{{testimonial_id}}</p>",
+                'variables' => ['testimonial_id', 'name', 'email', 'role', 'quote', 'photo'],
+            ],
             'test' => [
                 'subject'   => 'E-mail de test — PROCOPE Admin',
                 'body'      => "<p><strong>E-mail de test</strong></p>\n"
@@ -423,6 +599,14 @@ final class AutomationsController
         'alerte_candidature'  => 'Alerte candidature',
         'candidature_retenue' => 'Candidature retenue',
         'candidature_refusee' => 'Candidature refusée',
+        'projet_publie'       => 'Annonce projet',
+        'depot_projet'        => 'Accusé dépôt',
+        'alerte_depot'        => 'Alerte dépôt',
+        'depot_retenu'        => 'Dépôt retenu',
+        'depot_refuse'        => 'Dépôt refusé',
+        'message_reply'       => 'Réponse message',
+        'temoignage_recu'     => 'Accusé témoignage',
+        'alerte_temoignage'   => 'Alerte témoignage',
         'test'                => 'Test',
     ];
 
@@ -458,6 +642,7 @@ final class AutomationsController
             'defaults'       => self::templateDefaults(),
             'formations'     => Formation::all(),
             'offers'         => JobOffer::published(),
+            'projects'       => IncubatedProject::published(),
             'logs'           => $logs,
             'logFilters'     => $logFilters,
             'logTypes'       => MailLog::types(),
@@ -637,7 +822,8 @@ final class AutomationsController
             'salary'        => '150 000 F CFA / mois',
             'closes_at'     => date('Y-m-d 18:00:00', strtotime('+12 days')),
         ];
-        $offerCta = 'https://procopeafrique.vercel.app/offres-emploi.html#charge-de-communication-exemple';
+        $siteUrl = rtrim((string) Env::get('SITE_URL', 'https://procopeafrique.org'), '/');
+        $offerCta = $siteUrl . '/offres-emploi.html#charge-de-communication-exemple';
 
         return match ($template) {
             'confirmation' => [
@@ -683,7 +869,7 @@ final class AutomationsController
                 'formation'   => $formation,
                 'slots'       => $slots,
                 'affiche_url' => null,
-                'cta_url'     => 'https://procopeafrique.vercel.app/candidature.html#former',
+                'cta_url'     => $siteUrl . '/candidature.html#former',
             ],
             'offre', 'offre_prolongee' => [
                 'offer'       => $offer,
@@ -710,6 +896,50 @@ final class AutomationsController
                     . "compétences au service de PROCOPE Afrique. Vous trouverez mon CV ci-joint.",
                 'has_cv'         => true,
                 'offer'          => $offer,
+            ],
+            'projet_publie' => [
+                'project' => [
+                    'id'          => 0,
+                    'title'       => 'AgriConnect — Exemple',
+                    'pitch'       => "Plateforme mobile qui relie les agriculteurs locaux aux marchés urbains.",
+                    'description' => "AgriConnect réduit les pertes post-récolte en connectant producteurs et acheteurs.",
+                    'sector'      => 'AgriTech',
+                    'stage'       => 'prototype',
+                    'country'     => 'Togo',
+                ],
+                'cta_url'     => $siteUrl . '/projets.html#agriconnect-exemple',
+                'affiche_url' => null,
+            ],
+            'depot_projet', 'depot_retenu', 'depot_refuse' => [
+                'full_name'    => 'Afi Mensah',
+                'project_name' => 'Soleil Pour Tous',
+                'project'      => [
+                    'title' => 'AgriConnect — Exemple',
+                ],
+            ],
+            'depot_alerte' => [
+                'depot_id'     => 8,
+                'full_name'    => 'Afi Mensah',
+                'email'        => 'afi.mensah@exemple.com',
+                'phone'        => '+228 91 23 45 67',
+                'project_name' => 'Soleil Pour Tous',
+                'sector'       => 'Énergie',
+                'pitch'        => "Kits solaires abordables pour les ménages ruraux du Togo.",
+                'message_text' => "Nous cherchons un accompagnement pour structurer le modèle économique.",
+                'has_file'     => true,
+                'project'      => ['title' => 'AgriConnect — Exemple'],
+            ],
+            'message_reply' => [
+                'name'       => 'Afi Mensah',
+                'reply_html' => '<p>Merci pour votre message. Notre prochaine session de formation ouvrira en septembre : les inscriptions se feront en ligne depuis la page candidature.</p>',
+            ],
+            'temoignage_recu', 'temoignage_alerte' => [
+                'testimonial_id' => 3,
+                'name'           => 'Afi Mensah',
+                'email'          => 'afi.mensah@exemple.com',
+                'role'           => 'Participante à la formation entrepreneuriat',
+                'quote'          => "L'accompagnement de PROCOPE a été un véritable tremplin pour notre projet.",
+                'has_photo'      => true,
             ],
             default => ['sent_by' => Auth::user()['name'] ?? 'Admin Exemple'],
         };
