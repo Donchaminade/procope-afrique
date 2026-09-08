@@ -2544,6 +2544,10 @@ table {
         box-shadow: none;
     }
 
+    #temoignageModal.fade {
+        transition: none;
+    }
+
     .fg-carousel .owl-item .fg-slide,
     .fg-carousel .owl-item.center .fg-slide,
     .fg-carousel .owl-item:hover .fg-slide,

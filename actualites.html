@@ -433,7 +433,7 @@
                                 <a class="text-light mb-2" href="candidature.html"><i class="bi bi-arrow-right text-primary me-2"></i>Espace candidature</a>
                                 <a class="text-light mb-2" href="contact.html"><i class="bi bi-arrow-right text-primary me-2"></i>Contact</a>
                                 <a class="text-light mb-2" href="partenaires.html"><i class="bi bi-arrow-right text-primary me-2"></i>Investisseurs &amp; Partenaires</a>
-                                <a class="text-light mb-2" href="#temoigner" data-temoigner><i class="bi bi-arrow-right text-primary me-2"></i>Témoigner</a>
+                                <a class="text-light mb-2" href="#temoigner" data-temoigner data-bs-toggle="modal" data-bs-target="#temoignageModal"><i class="bi bi-arrow-right text-primary me-2"></i>Témoigner</a>
                             </div>
                         </div>
                     </div>
@@ -455,6 +455,49 @@
     <!-- Footer End -->
 
 
+    <!-- Témoignage Modal -->
+    <div class="modal fade" id="temoignageModal" tabindex="-1" aria-labelledby="temoignageModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title" id="temoignageModalTitle">Partager un témoignage</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small mb-3">L'équipe lit chaque message avant publication.</p>
+                    <div id="tm-form-alert" class="alert d-none" role="alert"></div>
+                    <form id="temoignage-form" novalidate>
+                        <div class="pc-hp" aria-hidden="true">
+                            <label for="tm-website">Site web</label>
+                            <input type="text" id="tm-website" name="website" tabindex="-1" autocomplete="off">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="tm-name">Nom *</label>
+                            <input class="form-control" id="tm-name" name="name" type="text" required maxlength="150" autocomplete="name">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="tm-role">Rôle / activité</label>
+                            <input class="form-control" id="tm-role" name="role" type="text" maxlength="190" placeholder="Ex. : CEO de …, participante à la formation">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="tm-email">E-mail <span class="text-muted">(pour l'accusé de réception)</span></label>
+                            <input class="form-control" id="tm-email" name="email" type="email" maxlength="190" autocomplete="email">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="tm-quote">Témoignage *</label>
+                            <textarea class="form-control" id="tm-quote" name="quote" rows="5" required maxlength="2000"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="tm-photo">Photo <span class="text-muted">(facultative, JPEG / PNG / WebP, 2 Mo max)</span></label>
+                            <input class="form-control" id="tm-photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp">
+                        </div>
+                        <button class="btn btn-primary w-100" type="submit" id="tm-submit">Envoyer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Back to Top -->
     <a href="#" class="btn btn-lg btn-primary btn-lg-square rounded back-to-top"><i class="bi bi-arrow-up"></i></a>
 
@@ -472,7 +515,7 @@
     <script src="js/main.js"></script>
     <script src="js/api-config.js"></script>
     <script src="js/galeries.js?v=20260824-gal2"></script>
-    <script src="js/temoignages.js"></script>
+    <script src="js/temoignages.js?v=20260908-tm2"></script>
     <script src="js/procope.js"></script>
 </body>
 

@@ -8,3 +8,5 @@ PHOTOS-PROCOPE/**
 
 # Local verification notes
 verif-notes.txt
+.vercel
+.env*.local
