@@ -2,9 +2,9 @@
  * Domain-agnostic SEO.
  *
  * Rewrites the canonical URL and the social-share URLs/images from the domain
- * that is actually serving the page (window.location.origin). This means the
- * site works correctly on ANY domain — the current Vercel URL, or a future
- * .org / .com / .tg — without editing every page again.
+ * that is actually serving the page (window.location.origin). Works on the
+ * primary domain (procopeafrique.org / www) and on Vercel without editing
+ * every page again.
  *
  * The static <link rel="canonical"> / og:* / twitter:* tags in the HTML act as
  * a fallback for crawlers that do not execute JavaScript (e.g. some social
@@ -14,7 +14,7 @@
 (function () {
     "use strict";
 
-    var FALLBACK_ORIGIN = "https://procopeafrique.vercel.app";
+    var FALLBACK_ORIGIN = "https://procopeafrique.org";
 
     var loc = window.location || {};
     var origin = (loc.origin && loc.origin.indexOf("http") === 0) ? loc.origin : FALLBACK_ORIGIN;

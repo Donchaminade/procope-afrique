@@ -83,7 +83,8 @@
     });
 
 
-    // Testimonials carousel
+    // Testimonials carousel (sauf chargement API : js/temoignages.js)
+    if (!$(".testimonial-carousel[data-temoignages-api]").length) {
     $(".testimonial-carousel").owlCarousel({
         autoplay: true,
         smartSpeed: 1500,
@@ -105,6 +106,7 @@
             }
         }
     });
+    }
 
 
     // Vendor carousel
