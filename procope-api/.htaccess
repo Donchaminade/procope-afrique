@@ -1,0 +1,22 @@
+# Filet de sécurité si le document root pointe sur la racine du projet
+# (au lieu de public/). Interdit les chemins sensibles, réécrit le reste vers public/.
+
+Options -Indexes
+RewriteEngine On
+
+<IfModule mod_authz_core.c>
+    <FilesMatch "(?i)^(\.env.*|composer\.(json|lock)|.*\.sql)$">
+        Require all denied
+    </FilesMatch>
+</IfModule>
+<IfModule !mod_authz_core.c>
+    <FilesMatch "(?i)^(\.env.*|composer\.(json|lock)|.*\.sql)$">
+        Order allow,deny
+        Deny from all
+    </FilesMatch>
+</IfModule>
+
+RewriteRule ^(\.env|composer\.(json|lock)|.*\.sql|app/|bin/|database/|storage/|views/|templates/|vendor/) - [F,L]
+
+RewriteRule ^$ public/index.php [L]
+RewriteRule ^((?!public/).*)$ public/$1 [L]

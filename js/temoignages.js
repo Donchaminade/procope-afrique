@@ -6,16 +6,21 @@
  *   étaient des placeholders fictifs : elles sont remplacées par l'API.
  *   Si l'API est vide ou indisponible : état vide + bouton Témoigner
  *   (pas de fallback vers les faux noms).
- * - Modal partagé #temoignageModal (injecté une fois) + POST multipart.
- * - Boutons / liens [data-temoigner] et hash #temoigner.
+ * - Modal partagé #temoignageModal (présent dans le HTML, sinon injecté) + POST.
+ * - Boutons / liens [data-temoigner] (data-bs-toggle/target) et hash #temoigner.
  *
  * Inclure après js/api-config.js (et après jQuery + Owl + Bootstrap).
+ *
+ * Bootstrap 5.0.0 (CDN du site) n'a PAS Modal.getOrCreateInstance
+ * (ajouté en 5.1). openModal() utilise getInstance / new Modal.
  */
 (function () {
     'use strict';
 
     var API_BASE = window.PROCOPE_API_BASE || 'http://127.0.0.1:8088';
     var SUCCESS_MSG = 'Merci, votre témoignage sera lu par l\'équipe avant publication.';
+    var openersBound = false;
+    var formBound = false;
 
     function esc(text) {
         var div = document.createElement('div');
@@ -30,10 +35,8 @@
         return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
     }
 
-    function ensureModal() {
-        if (document.getElementById('temoignageModal')) { return; }
-        var wrap = document.createElement('div');
-        wrap.innerHTML =
+    function modalMarkup() {
+        return (
             '<div class="modal fade" id="temoignageModal" tabindex="-1" aria-labelledby="temoignageModalTitle" aria-hidden="true">' +
                 '<div class="modal-dialog modal-dialog-centered">' +
                     '<div class="modal-content">' +
@@ -74,8 +77,24 @@
                         '</div>' +
                     '</div>' +
                 '</div>' +
-            '</div>';
+            '</div>'
+        );
+    }
+
+    function ensureModal() {
+        if (document.getElementById('temoignageModal')) { return; }
+        var wrap = document.createElement('div');
+        wrap.innerHTML = modalMarkup();
         document.body.appendChild(wrap.firstElementChild);
+    }
+
+    function decorateTriggers(scope) {
+        var root = scope || document;
+        var nodes = root.querySelectorAll('[data-temoigner], .btn-temoigner');
+        for (var i = 0; i < nodes.length; i++) {
+            nodes[i].setAttribute('data-bs-toggle', 'modal');
+            nodes[i].setAttribute('data-bs-target', '#temoignageModal');
+        }
     }
 
     function showAlert(kind, message) {
@@ -93,40 +112,115 @@
         el.textContent = '';
     }
 
+    function hideModalFallback(modalEl) {
+        modalEl.classList.remove('show');
+        modalEl.style.display = 'none';
+        modalEl.setAttribute('aria-hidden', 'true');
+        modalEl.removeAttribute('aria-modal');
+        modalEl.removeAttribute('role');
+        delete modalEl.dataset.tmFallback;
+        document.body.classList.remove('modal-open');
+        var bd = document.getElementById('temoignageModalBackdrop');
+        if (bd && bd.parentNode) { bd.parentNode.removeChild(bd); }
+    }
+
+    function showModalFallback(modalEl) {
+        modalEl.classList.add('show');
+        modalEl.style.display = 'block';
+        modalEl.removeAttribute('aria-hidden');
+        modalEl.setAttribute('aria-modal', 'true');
+        modalEl.setAttribute('role', 'dialog');
+        document.body.classList.add('modal-open');
+        if (!document.getElementById('temoignageModalBackdrop')) {
+            var bd = document.createElement('div');
+            bd.id = 'temoignageModalBackdrop';
+            bd.className = 'modal-backdrop fade show';
+            document.body.appendChild(bd);
+        }
+        if (!modalEl.dataset.tmFallbackBound) {
+            modalEl.dataset.tmFallbackBound = '1';
+            modalEl.addEventListener('click', function (ev) {
+                if (ev.target === modalEl || ev.target.closest('[data-bs-dismiss="modal"]')) {
+                    hideModalFallback(modalEl);
+                }
+            });
+            document.addEventListener('keydown', function (ev) {
+                if (ev.key === 'Escape' && modalEl.dataset.tmFallback === '1') {
+                    hideModalFallback(modalEl);
+                }
+            });
+        }
+        modalEl.dataset.tmFallback = '1';
+    }
+
+    function showBootstrapModal(modalEl) {
+        var Modal = window.bootstrap && bootstrap.Modal;
+        if (!Modal) { return false; }
+        var inst = null;
+        try {
+            if (typeof Modal.getOrCreateInstance === 'function') {
+                inst = Modal.getOrCreateInstance(modalEl);
+            } else if (typeof Modal.getInstance === 'function') {
+                inst = Modal.getInstance(modalEl);
+            }
+            if (!inst) {
+                inst = new Modal(modalEl);
+            }
+            inst.show();
+            return true;
+        } catch (err) {
+            return false;
+        }
+    }
+
     function openModal() {
         ensureModal();
         var modalEl = document.getElementById('temoignageModal');
-        if (!modalEl || typeof bootstrap === 'undefined') { return; }
+        if (!modalEl) { return; }
         hideAlert();
         var form = document.getElementById('temoignage-form');
         if (form) { form.classList.remove('d-none'); }
-        bootstrap.Modal.getOrCreateInstance(modalEl).show();
+        if (!showBootstrapModal(modalEl)) {
+            showModalFallback(modalEl);
+        }
     }
 
     function bindOpeners() {
-        document.addEventListener('click', function (ev) {
-            var trigger = ev.target.closest('[data-temoigner]');
-            if (!trigger) { return; }
-            ev.preventDefault();
-            openModal();
-        });
+        if (!openersBound) {
+            openersBound = true;
+            document.addEventListener('click', function (ev) {
+                var trigger = ev.target.closest('[data-temoigner], .btn-temoigner');
+                if (!trigger) { return; }
+                ev.preventDefault();
+                ev.stopImmediatePropagation();
+                openModal();
+            }, true);
+            window.addEventListener('hashchange', function () {
+                if (location.hash === '#temoigner') { openModal(); }
+            });
+        }
         if (location.hash === '#temoigner') {
             openModal();
         }
-        window.addEventListener('hashchange', function () {
-            if (location.hash === '#temoigner') { openModal(); }
-        });
+    }
+
+    function inputValue(id) {
+        var el = document.getElementById(id);
+        return el ? String(el.value || '').trim() : '';
     }
 
     function bindForm() {
+        if (formBound) { return; }
+        formBound = true;
         document.addEventListener('submit', function (ev) {
             var form = ev.target;
             if (!form || form.id !== 'temoignage-form') { return; }
             ev.preventDefault();
             hideAlert();
 
-            var name = (form.name.value || '').trim();
-            var quote = (form.quote.value || '').trim();
+            // form.name est la propriété HTMLFormElement (string), pas l'input name="name"
+            var name = inputValue('tm-name');
+            var quote = inputValue('tm-quote');
             if (name.length < 2) {
                 showAlert('danger', 'Veuillez indiquer votre nom (2 caractères minimum).');
                 return;
@@ -140,7 +234,8 @@
             var prev = btn ? btn.textContent : '';
             if (btn) {
                 btn.disabled = true;
-                btn.textContent = 'Envoi…';
+                btn.setAttribute('aria-busy', 'true');
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Envoi…';
             }
 
             var data = new FormData(form);
@@ -170,6 +265,7 @@
             }).finally(function () {
                 if (btn) {
                     btn.disabled = false;
+                    btn.removeAttribute('aria-busy');
                     btn.textContent = prev || 'Envoyer';
                 }
             });
@@ -202,15 +298,16 @@
         return (
             '<div class="tm-empty text-center py-5">' +
                 '<p class="mb-4">Aucun témoignage publié pour le moment. Vous pouvez être le premier.</p>' +
-                '<button type="button" class="btn btn-primary btn-temoigner py-3 px-5" data-temoigner>Témoigner</button>' +
+                '<button type="button" class="btn btn-primary btn-temoigner py-3 px-5" data-temoigner data-bs-toggle="modal" data-bs-target="#temoignageModal">Témoigner</button>' +
             '</div>'
         );
     }
 
     function owlOptions() {
+        var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         return {
-            autoplay: true,
-            smartSpeed: 1500,
+            autoplay: !reduce,
+            smartSpeed: reduce ? 0 : 1500,
             dots: true,
             loop: true,
             center: true,
@@ -241,6 +338,7 @@
                 empty.classList.remove('d-none');
                 empty.innerHTML = emptyHtml();
             }
+            decorateTriggers(root);
             return;
         }
 
@@ -265,6 +363,7 @@
             }
             $(carousel).owlCarousel(opts);
         }
+        decorateTriggers(root);
     }
 
     function loadCarousels() {
@@ -284,6 +383,7 @@
 
     function boot() {
         ensureModal();
+        decorateTriggers(document);
         bindOpeners();
         bindForm();
         loadCarousels();
