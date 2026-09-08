@@ -8,7 +8,7 @@
  * remplace par cid:logo-procope et embarque public/assets/logo.png.
  */
 $logoUrl = \App\Services\Mailer::logoPublicUrl();
-$siteUrl = rtrim((string) \App\Core\Env::get('SITE_URL', 'https://procopeafrique.vercel.app'), '/');
+$siteUrl = rtrim((string) \App\Core\Env::get('SITE_URL', 'https://procopeafrique.org'), '/');
 ?>
 <!doctype html>
 <html lang="fr">

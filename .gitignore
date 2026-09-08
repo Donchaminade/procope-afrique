@@ -1,3 +1,10 @@
 # Temporary image drop folder — keep README only
 imgremp/*
 !imgremp/README.txt
+
+# Raw photo sources (jpg/psd) — web copies live in img/
+PHOTOS-PROCOPE/**
+!PHOTOS-PROCOPE/MAPPING.md
+
+# Local verification notes
+verif-notes.txt

@@ -20,6 +20,7 @@ $roleBadge = match ($roleKey) {
     default       => 'bg-white/10 text-slate-300 ring-white/20',
 };
 $newMessagesCount = \App\Models\ContactMessage::countNew();
+$pendingTestimonials = \App\Models\Testimonial::countPending();
 ?>
 <!doctype html>
 <html lang="fr">
@@ -57,6 +58,9 @@ $newMessagesCount = \App\Models\ContactMessage::countNew();
         <a href="/admin/formations" class="<?= $navClass('/admin/formations') ?>">
             <?= icon('academic-cap', 'h-5 w-5 shrink-0') ?> Formations
         </a>
+        <a href="/admin/galeries" class="<?= $navClass('/admin/galeries') ?>">
+            <?= icon('photo', 'h-5 w-5 shrink-0') ?> Galeries
+        </a>
         <a href="/admin/archives" class="<?= $navClass('/admin/archives') ?>">
             <?= icon('archive-box', 'h-5 w-5 shrink-0') ?> Archives
         </a>
@@ -71,9 +75,23 @@ $newMessagesCount = \App\Models\ContactMessage::countNew();
                 </span>
             <?php endif; ?>
         </a>
+        <a href="/admin/temoignages" class="<?= $navClass('/admin/temoignages') ?>">
+            <?= icon('chat-bubble', 'h-5 w-5 shrink-0') ?> Témoignages
+            <?php if ($pendingTestimonials > 0): ?>
+                <span class="ml-auto inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-brand-orange px-1.5 text-[11px] font-bold text-white">
+                    <?= $pendingTestimonials > 99 ? '99+' : (int) $pendingTestimonials ?>
+                </span>
+            <?php endif; ?>
+        </a>
         <?php if (\App\Services\Auth::isAtLeast('admin')): ?>
             <a href="/admin/emplois" class="<?= $navClass('/admin/emplois') ?>">
                 <?= icon('briefcase', 'h-5 w-5 shrink-0') ?> Offres d'emploi
+            </a>
+            <a href="/admin/appels" class="<?= $navClass('/admin/appels') ?>">
+                <?= icon('megaphone', 'h-5 w-5 shrink-0') ?> Appels à incubation
+            </a>
+            <a href="/admin/projets" class="<?= $navClass('/admin/projets') ?>">
+                <?= icon('rocket', 'h-5 w-5 shrink-0') ?> Projets incubés
             </a>
             <a href="/admin/automations" class="<?= $navClass('/admin/automations') ?>">
                 <?= icon('bolt', 'h-5 w-5 shrink-0') ?> Automatisations
@@ -153,7 +171,7 @@ $newMessagesCount = \App\Models\ContactMessage::countNew();
         <p>&copy; <?= date('Y') ?> PROCOPE Afrique — Tous droits réservés.</p>
         <p class="flex items-center gap-3">
             <span class="rounded-full bg-slate-200/70 px-2.5 py-0.5 font-semibold text-slate-500">Admin v1.0</span>
-            <a href="https://procopeafrique.vercel.app" target="_blank" rel="noopener"
+            <a href="<?= e(rtrim((string) \App\Core\Env::get('SITE_URL', 'https://procopeafrique.org'), '/')) ?>" target="_blank" rel="noopener"
                class="inline-flex items-center gap-1 font-medium transition hover:text-brand-blue">
                 <?= icon('paper-airplane', 'h-3.5 w-3.5') ?> Voir le site public
             </a>

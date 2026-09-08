@@ -50,13 +50,15 @@ procope-api/
 
 ## Déploiement Hostinger
 
+**DNS (à faire plus tard, après feu vert) :** `api.procopeafrique.org` → IP Hostinger. Le site vitrine reste sur Vercel (`procopeafrique.org` + `www` + garde-fou `procopeafrique.vercel.app`). Le CORS est déjà multi-origines (voir `.env.example`). Ne pas déployer Hostinger tant que ce n'est pas demandé.
+
 1. **Base de données** : créer une base MySQL dans hPanel, importer `database/migrations.sql` via phpMyAdmin (crée les tables + seed de la formation janvier 2027, inscriptions ouvertes).
-2. **Fichiers** : téléverser le dossier `procope-api` (idéalement sur un sous-domaine `api.votre-domaine`) et pointer le **document root du sous-domaine vers `procope-api/public`**.
-3. **Configuration** : copier `.env.example` en `.env` et renseigner DB, SMTP et `CORS_ORIGINS` (ajouter `https://procopeafrique.vercel.app` et le futur domaine).
-   **Le SMTP se configure uniquement dans le `.env`** (`SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`, `MAIL_FROM_NAME`) — plus dans la page Réglages de l'admin. Remplir ces variables quand la boîte mail sera créée (une boîte `noreply@` Hostinger recommandée pour SPF/DKIM) ; tant qu'elles sont vides, les envois sont journalisés dans `mail_logs` mais ne partent pas. L'activation/désactivation des e-mails automatiques se pilote ensuite dans **Admin → Automatisations** (la page affiche aussi l'état de la configuration SMTP et permet un e-mail de test).
+2. **Fichiers** : téléverser le dossier `procope-api` sur le sous-domaine `api.procopeafrique.org` et pointer le **document root du sous-domaine vers `procope-api/public`**.
+3. **Configuration** : copier `.env.example` en `.env` et renseigner DB, SMTP et `CORS_ORIGINS`. Les origines prod déjà prévues : `https://procopeafrique.org`, `https://www.procopeafrique.org`, `https://procopeafrique.vercel.app`. En local, ajouter `http://127.0.0.1:5501` (et éventuellement `http://localhost:5501`) dans le vrai `.env` sans toucher au SMTP.
+   **Le SMTP se configure uniquement dans le `.env`** (`SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`, `MAIL_FROM_NAME`) — plus dans la page Réglages de l'admin. Remplir ces variables quand la boîte mail sera créée (une boîte `noreply@procopeafrique.org` Hostinger recommandée pour SPF/DKIM) ; tant qu'elles sont vides, les envois sont journalisés dans `mail_logs` mais ne partent pas. L'activation/désactivation des e-mails automatiques se pilote ensuite dans **Admin → Automatisations** (la page affiche aussi l'état de la configuration SMTP et permet un e-mail de test).
 4. **Dépendances** : `composer install --no-dev` (SSH Hostinger) — sans vendor, l'app fonctionne quand même : mails via `mail()` natif et export en CSV.
-5. **Premier admin** : `php bin/create-admin.php email@procope.org "Nom Prénom" super_admin` (mot de passe demandé en interactif).
-6. **Front** : dans `js/inscription-formation.js` (repo du site), remplacer `https://api.procopeafrique.com` par l'URL réelle de l'API.
+5. **Premier admin** : `php bin/create-admin.php email@procopeafrique.org "Nom Prénom" super_admin` (mot de passe demandé en interactif).
+6. **Front** : l'URL API se règle **uniquement** dans `js/api-config.js` (`PROD_API_BASE`, prévu `https://api.procopeafrique.org`). Tant que Hostinger n'est pas en ligne, le site public (Vercel / .org) cassera formations et offres — c'est attendu.
 7. **Cron des automatisations** (rappels J-5 des offres d'emploi) : dans hPanel → *Avancé → Tâches cron*, ajouter une tâche **toutes les heures** :
 
    ```bash

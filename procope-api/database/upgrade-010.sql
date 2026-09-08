@@ -1,0 +1,11 @@
+-- =====================================================================
+-- UPGRADE 010 — Dépôts : plus d'unicité e-mail seul
+--   Spontané : plusieurs dossiers par e-mail (projets différents).
+--   Appel    : un e-mail = une candidature par appel (contrôle applicatif).
+-- Appliquer : php bin/apply-upgrade-010.php (idempotent)
+-- =====================================================================
+
+-- Tout UNIQUE portant uniquement sur project_applications.email est
+-- retiré par le script PHP (le nom d'index n'est pas fixe).
+-- Index de recherche non unique (créé par le script s'il est absent) :
+--   KEY idx_projapp_email_call (email, call_id)

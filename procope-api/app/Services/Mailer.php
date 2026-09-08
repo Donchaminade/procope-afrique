@@ -33,6 +33,7 @@ final class Mailer
     public const OFF_BY_DEFAULT = [
         'offre_publiee', 'offre_rappel', 'offre_prolongee', 'candidature_emploi',
         'candidature_retenue', 'candidature_refusee',
+        'projet_publie',
     ];
 
     /**
@@ -112,6 +113,7 @@ final class Mailer
             'offre'           => "Voir l'offre et postuler",
             'offre_rappel'    => 'Postuler maintenant',
             'offre_prolongee' => "Voir l'offre et postuler",
+            'projet_publie'   => 'Voir le projet',
         ];
         if (isset($ctaLabels[$name])) {
             $before = '';
@@ -250,6 +252,48 @@ final class Mailer
                 'phone'          => (string) (($data['phone'] ?? '') ?: '—'),
                 'message'        => (string) ($data['message_text'] ?? ''),
                 'cv'             => !empty($data['has_cv']) ? 'Oui — joint à la candidature' : 'Non',
+            ],
+            'projet_publie', 'depot_projet', 'depot_retenu', 'depot_refuse' => (static function () use ($data): array {
+                $project = is_array($data['project'] ?? null) ? $data['project'] : [];
+                $pitch = trim((string) ($project['pitch'] ?? ''));
+                $desc = trim((string) ($project['description'] ?? ''));
+                $extrait = $pitch !== '' ? $pitch : $desc;
+                if (mb_strlen($extrait) > 220) {
+                    $extrait = rtrim(mb_substr($extrait, 0, 220)) . '…';
+                }
+                return [
+                    'title'        => (string) ($project['title'] ?? ''),
+                    'sector'       => (string) ($project['sector'] ?? ''),
+                    'stage'        => (string) ($project['stage'] ?? ''),
+                    'country'      => (string) (($project['country'] ?? '') ?: 'Afrique'),
+                    'extrait'      => $extrait,
+                    'cta_url'      => (string) ($data['cta_url'] ?? ''),
+                    'full_name'    => (string) ($data['full_name'] ?? ''),
+                    'project_name' => (string) ($data['project_name'] ?? ''),
+                ];
+            })(),
+            'depot_alerte' => [
+                'depot_id'     => (string) (int) ($data['depot_id'] ?? 0),
+                'full_name'    => (string) ($data['full_name'] ?? ''),
+                'email'        => (string) (($data['email'] ?? '') ?: '—'),
+                'phone'        => (string) (($data['phone'] ?? '') ?: '—'),
+                'project_name' => (string) (($data['project_name'] ?? '') ?: '—'),
+                'sector'       => (string) (($data['sector'] ?? '') ?: '—'),
+                'pitch'        => (string) ($data['pitch'] ?? ''),
+                'message'      => (string) ($data['message_text'] ?? ''),
+                'fichier'      => !empty($data['has_file']) ? 'Oui — PDF joint' : 'Non',
+                'title'        => (string) (is_array($data['project'] ?? null) ? ($data['project']['title'] ?? '') : ''),
+            ],
+            'message_reply' => [
+                'name' => (string) ($data['name'] ?? ''),
+            ],
+            'temoignage_recu', 'temoignage_alerte' => [
+                'testimonial_id' => (string) (int) ($data['testimonial_id'] ?? 0),
+                'name'           => (string) ($data['name'] ?? ''),
+                'email'          => (string) (($data['email'] ?? '') ?: '—'),
+                'role'           => (string) (($data['role'] ?? '') ?: '—'),
+                'quote'          => (string) ($data['quote'] ?? ''),
+                'photo'          => !empty($data['has_photo']) ? 'Oui — jointe au dépôt' : 'Non',
             ],
             default => [
                 'sent_by' => (string) ($data['sent_by'] ?? 'Admin'),

@@ -41,6 +41,7 @@ require $root . '/app/helpers.php';
 
 use App\Core\Database;
 use App\Core\Env;
+use App\Models\ProjectApplication;
 use App\Services\HtmlSanitizer;
 use App\Services\Mailer;
 
@@ -248,6 +249,28 @@ register_shutdown_function(static function () use (&$tempFiles): void {
         }
         $pdo->exec("DELETE FROM job_applications WHERE email LIKE '%@" . TEST_EMAIL_DOMAIN . "'");
         $pdo->exec("DELETE FROM job_offers WHERE slug LIKE '" . TEST_SLUG_PREFIX . "%'");
+        $pitchFiles = $pdo->query(
+            "SELECT file_path FROM project_applications WHERE file_path IS NOT NULL AND email LIKE '%@" . TEST_EMAIL_DOMAIN . "'"
+        )->fetchAll(PDO::FETCH_COLUMN);
+        foreach ($pitchFiles as $pitch) {
+            @unlink(dirname(__DIR__) . '/storage/projets/' . basename((string) $pitch));
+        }
+        $pdo->exec("DELETE FROM project_applications WHERE email LIKE '%@" . TEST_EMAIL_DOMAIN . "'");
+        $pdo->exec("DELETE FROM incubation_calls WHERE slug LIKE '" . TEST_SLUG_PREFIX . "%'");
+        $tmPhotos = $pdo->query(
+            "SELECT photo_path FROM testimonials
+              WHERE photo_path IS NOT NULL
+                AND (author_email LIKE '%@" . TEST_EMAIL_DOMAIN . "'
+                     OR author_name LIKE 'Test Témoignage%')"
+        )->fetchAll(PDO::FETCH_COLUMN);
+        foreach ($tmPhotos as $photo) {
+            @unlink(dirname(__DIR__) . '/public/uploads/temoignages/' . basename((string) $photo));
+        }
+        $pdo->exec(
+            "DELETE FROM testimonials
+              WHERE author_email LIKE '%@" . TEST_EMAIL_DOMAIN . "'
+                 OR author_name LIKE 'Test Témoignage%'"
+        );
         // Compteurs anti-abus alimentés par la suite (IP locale uniquement)
         $pdo->exec("DELETE FROM rate_limits WHERE ip = '127.0.0.1'");
         $pdo->exec("DELETE FROM login_attempts WHERE ip = '127.0.0.1' AND success = 0");
@@ -390,6 +413,10 @@ $pages = [
     '/admin/automations'           => 'automatisations',
     '/admin/archives'              => 'archives',
     '/admin/messages'              => 'messages',
+    '/admin/temoignages'           => 'témoignages',
+    '/admin/temoignages/create'    => 'nouveau témoignage',
+    '/admin/galeries'              => 'galeries',
+    '/admin/galeries/create'       => 'nouvel album',
     '/admin/settings'              => 'réglages',
     '/admin/surveillance'          => 'surveillance + journal',
     '/admin/users'                 => 'utilisateurs',
@@ -397,6 +424,8 @@ $pages = [
 foreach ($pages as $path => $label) {
     T::assertStatus(200, $admin->get($path), "GET $path ($label) -> 200");
 }
+T::assertStatus(200, $admin->get('/admin/automations/preview/temoignage_recu'), 'preview temoignage_recu -> 200');
+T::assertStatus(200, $admin->get('/admin/automations/preview/temoignage_alerte'), 'preview temoignage_alerte -> 200');
 
 // ---------------------------------------------------------------------
 T::section('6. API candidature (POST multipart)');
@@ -460,6 +489,252 @@ $inDb = (int) Database::run(
     'SELECT COUNT(*) FROM job_applications WHERE email = ?', [$honeypotEmail]
 )->fetchColumn();
 T::assertEquals(0, $inDb, 'honeypot rempli -> aucune ligne en base');
+
+// ---------------------------------------------------------------------
+T::section('6b. API dépôt de projet (spontané + appels)');
+// ---------------------------------------------------------------------
+
+T::assertEquals(
+    'solar pump kara',
+    ProjectApplication::normalizeProjectName('  SOLAR PUMP KARA  '),
+    'normalizeProjectName -> trim + minuscules'
+);
+
+Database::run("DELETE FROM rate_limits WHERE action = 'depot_projet'");
+
+$depotEmail = 'porteur-' . time() . '@' . TEST_EMAIL_DOMAIN;
+$depotNameA = 'Solar Pump Kara';
+$depotNameB = 'Recyclo Lomé';
+
+$alertsBefore = (int) Database::run(
+    "SELECT COUNT(*) FROM mail_logs WHERE type = 'alerte_depot'"
+)->fetchColumn();
+
+$r = $anon->post('/api/projets/depot', ['multipart' => [
+    'full_name'    => 'Porteur Multi Projets',
+    'email'        => $depotEmail,
+    'project_name' => $depotNameA,
+    'pitch'        => 'Pompe solaire pour maraîchers.',
+]]);
+T::assertStatus(201, $r, 'dépôt spontané 1 -> 201');
+
+$r = $anon->post('/api/projets/depot', ['multipart' => [
+    'full_name'    => 'Porteur Multi Projets',
+    'email'        => $depotEmail,
+    'project_name' => $depotNameB,
+    'pitch'        => 'Recyclage de plastiques.',
+]]);
+T::assertStatus(201, $r, 'dépôt spontané 2 (même e-mail, autre nom) -> 201');
+
+$inDb = (int) Database::run(
+    'SELECT COUNT(*) FROM project_applications WHERE email = ? AND call_id IS NULL',
+    [$depotEmail]
+)->fetchColumn();
+T::assertEquals(2, $inDb, '2 spontanés même e-mail -> 2 lignes');
+
+$acks = (int) Database::run(
+    'SELECT COUNT(*) FROM mail_logs WHERE type = ? AND to_email = ?',
+    ['depot_projet', $depotEmail]
+)->fetchColumn();
+T::assertEquals(2, $acks, 'accusé journalisé pour chaque dépôt spontané');
+
+$alertsAfterTwo = (int) Database::run(
+    "SELECT COUNT(*) FROM mail_logs WHERE type = 'alerte_depot'"
+)->fetchColumn();
+T::assertTrue(
+    $alertsAfterTwo - $alertsBefore >= 2,
+    'alerte équipe journalisée pour chaque dépôt spontané',
+    'delta=' . ($alertsAfterTwo - $alertsBefore)
+);
+
+$acksBefore409 = $acks;
+$r = $anon->post('/api/projets/depot', ['multipart' => [
+    'full_name'    => 'Porteur Multi Projets',
+    'email'        => $depotEmail,
+    'project_name' => '  SOLAR PUMP KARA  ',
+]]);
+T::assertStatus(409, $r, 'dépôt spontané 3 (même e-mail + même nom) -> 409');
+T::assertContains('existe déjà pour cet e-mail', $r['body'], '409 spontané -> message nommé');
+T::assertNotContains(
+    'Un dépôt existe déjà avec cette adresse e-mail',
+    $r['body'],
+    '409 spontané -> plus le texte trop large'
+);
+$acksAfter409 = (int) Database::run(
+    'SELECT COUNT(*) FROM mail_logs WHERE type = ? AND to_email = ?',
+    ['depot_projet', $depotEmail]
+)->fetchColumn();
+T::assertEquals($acksBefore409, $acksAfter409, '409 spontané -> pas de nouvel accusé');
+
+Database::run(
+    "UPDATE project_applications SET statut = 'refusee'
+      WHERE email = ? AND call_id IS NULL AND project_name = ?",
+    [$depotEmail, $depotNameA]
+);
+$r = $anon->post('/api/projets/depot', ['multipart' => [
+    'full_name'    => 'Porteur Multi Projets',
+    'email'        => $depotEmail,
+    'project_name' => $depotNameA,
+]]);
+T::assertStatus(201, $r, 'même nom après refus -> 201');
+
+Database::run("DELETE FROM rate_limits WHERE action = 'depot_projet'");
+
+// ---------------------------------------------------------------------
+T::section('6c. API témoignages (modération)');
+// ---------------------------------------------------------------------
+
+Database::run("DELETE FROM rate_limits WHERE action = 'temoignage'");
+
+$r = $anon->get('/api/galeries');
+T::assertStatus(200, $r, 'GET /api/galeries -> 200');
+$galJson = json_decode($r['body'], true);
+T::assertTrue(isset($galJson['galleries']) && is_array($galJson['galleries']), 'GET /api/galeries -> clé galleries');
+T::assertTrue(($galJson['kind'] ?? '') === 'photos', 'GET /api/galeries -> kind photos par défaut');
+$galYears = array_values(array_unique(array_map(
+    static fn (array $g): int => (int) ($g['year'] ?? 0),
+    $galJson['galleries']
+)));
+rsort($galYears);
+T::assertTrue(count($galYears) >= 1, 'GET /api/galeries -> au moins une année');
+if ($galJson['galleries']) {
+    $firstGal = $galJson['galleries'][0];
+    T::assertTrue(isset($firstGal['title'], $firstGal['year'], $firstGal['images']), 'album -> title/year/images');
+    T::assertTrue(is_array($firstGal['images']), 'album -> images[]');
+    T::assertTrue(($firstGal['kind'] ?? '') === 'photos', 'album défaut -> kind photos');
+}
+
+$r = $anon->get('/api/galeries?kind=affiche');
+T::assertStatus(200, $r, 'GET /api/galeries?kind=affiche -> 200');
+$affJson = json_decode($r['body'], true);
+T::assertTrue(isset($affJson['galleries']) && is_array($affJson['galleries']), 'kind=affiche -> clé galleries');
+T::assertTrue(count($affJson['galleries']) >= 1, 'kind=affiche -> au moins une affiche');
+foreach ($affJson['galleries'] as $aff) {
+    T::assertTrue(($aff['kind'] ?? '') === 'affiche', 'kind=affiche -> albums affiche');
+    T::assertTrue(!empty($aff['cover']) || !empty($aff['images']), 'affiche -> image principale');
+}
+
+$r = $admin->get('/admin/galeries/create');
+T::assertContains('Affiche événement', $r['body'] ?? '', 'form galerie -> sélecteur de type');
+T::assertContains('Photos de formation', $r['body'] ?? '', 'form galerie -> type photos');
+
+$r = $admin->get('/admin/galeries');
+T::assertContains('Affiche', $r['body'] ?? '', 'liste galeries -> badge Affiche');
+
+$r = $anon->get('/api/temoignages');
+T::assertStatus(200, $r, 'GET /api/temoignages -> 200');
+$tmJson = json_decode($r['body'], true);
+T::assertTrue(isset($tmJson['items']) && is_array($tmJson['items']), 'GET public -> clé items');
+$publishedBefore = count($tmJson['items']);
+
+$tmEmail = 'temoin-' . time() . '@' . TEST_EMAIL_DOMAIN;
+$tmName = 'Test Témoignage Public';
+$tmQuote = 'Nous avons suivi la formation PROCOPE et structuré notre projet de A à Z.';
+
+$alertsTmBefore = (int) Database::run(
+    "SELECT COUNT(*) FROM mail_logs WHERE type = 'alerte_temoignage'"
+)->fetchColumn();
+
+$r = $anon->post('/api/temoignages', ['multipart' => [
+    'name'  => $tmName,
+    'role'  => 'Participante test',
+    'quote' => $tmQuote,
+    'email' => $tmEmail,
+]]);
+T::assertStatus(201, $r, 'POST témoignage valide -> 201');
+T::assertContains('sera lu par l\'équipe', $r['body'], 'POST -> message de modération');
+
+$row = Database::run(
+    'SELECT * FROM testimonials WHERE author_name = ? ORDER BY id DESC LIMIT 1',
+    [$tmName]
+)->fetch();
+T::assertTrue((bool) $row, 'POST -> ligne en base');
+T::assertEquals('en_attente', $row['statut'] ?? null, 'POST public -> statut en_attente');
+T::assertEquals('public', $row['source'] ?? null, 'POST public -> source public');
+
+$r = $anon->get('/api/temoignages');
+$tmJson = json_decode($r['body'], true);
+T::assertEquals($publishedBefore, count($tmJson['items'] ?? []), 'en_attente absent du GET public');
+
+$acksTm = (int) Database::run(
+    'SELECT COUNT(*) FROM mail_logs WHERE type = ? AND to_email = ?',
+    ['temoignage_recu', $tmEmail]
+)->fetchColumn();
+T::assertTrue($acksTm >= 1, 'accusé journalisé si e-mail fourni', 'acks=' . $acksTm);
+
+$alertsTmAfter = (int) Database::run(
+    "SELECT COUNT(*) FROM mail_logs WHERE type = 'alerte_temoignage'"
+)->fetchColumn();
+T::assertTrue(
+    $alertsTmAfter - $alertsTmBefore >= 1,
+    'alerte équipe journalisée',
+    'delta=' . ($alertsTmAfter - $alertsTmBefore)
+);
+
+$honeypotName = 'Test Témoignage Robot';
+$r = $anon->post('/api/temoignages', ['multipart' => [
+    'name'    => $honeypotName,
+    'quote'   => 'Ceci est un message de spam suffisamment long pour passer.',
+    'website' => 'http://spam.example.com',
+]]);
+T::assertStatus(200, $r, 'honeypot rempli -> 200 (leurre, pas de 201)');
+$inDb = (int) Database::run(
+    'SELECT COUNT(*) FROM testimonials WHERE author_name = ?',
+    [$honeypotName]
+)->fetchColumn();
+T::assertEquals(0, $inDb, 'honeypot rempli -> aucune ligne en base');
+
+$r = $anon->post('/api/temoignages', ['multipart' => [
+    'name'  => 'X',
+    'quote' => 'trop court',
+]]);
+T::assertStatus(422, $r, 'validation trop courte -> 422');
+
+Database::run("DELETE FROM rate_limits WHERE action = 'temoignage'");
+
+$slugA = TEST_SLUG_PREFIX . 'appel-a';
+$slugB = TEST_SLUG_PREFIX . 'appel-b';
+foreach ([$slugA => 'Appel test A', $slugB => 'Appel test B'] as $slug => $title) {
+    Database::run(
+        'INSERT INTO incubation_calls (title, slug, sector, description, opens_at, closes_at, is_published)
+         VALUES (?, ?, ?, ?, ?, ?, 1)',
+        [
+            $title, $slug, 'AgriTech', 'Appel de test automatique.',
+            date('Y-m-d H:i:s', strtotime('-1 day')),
+            date('Y-m-d H:i:s', strtotime('+10 days')),
+        ]
+    );
+}
+
+$callEmail = 'appelant-' . time() . '@' . TEST_EMAIL_DOMAIN;
+$r = $anon->post('/api/appels/' . $slugA . '/depot', ['multipart' => [
+    'full_name'    => 'Candidat Appel',
+    'email'        => $callEmail,
+    'project_name' => 'Projet Appel A',
+]]);
+T::assertStatus(201, $r, 'appel A -> 201');
+
+$r = $anon->post('/api/appels/' . $slugB . '/depot', ['multipart' => [
+    'full_name'    => 'Candidat Appel',
+    'email'        => $callEmail,
+    'project_name' => 'Projet Appel B',
+]]);
+T::assertStatus(201, $r, 'appel B (même e-mail, autre appel) -> 201');
+
+$r = $anon->post('/api/appels/' . $slugA . '/depot', ['multipart' => [
+    'full_name'    => 'Candidat Appel',
+    'email'        => $callEmail,
+    'project_name' => 'Projet Appel A2',
+]]);
+T::assertStatus(409, $r, '2e dépôt même appel même e-mail -> 409');
+T::assertContains('pour cet appel', $r['body'], '409 appel -> message par appel');
+
+$r = $anon->post('/api/appels/' . $slugA . '/depot', ['multipart' => [
+    'full_name'    => 'Porteur Multi Projets',
+    'email'        => $depotEmail,
+    'project_name' => $depotNameB,
+]]);
+T::assertStatus(201, $r, 'spontané + appel (même e-mail) -> 201');
 
 // ---------------------------------------------------------------------
 T::section('7. HtmlSanitizer (tests unitaires)');
@@ -548,6 +823,27 @@ $html = Mailer::template('contact', [
 ]);
 T::assertContains('Message de test unitaire.', $html, 'template contact -> message rendu');
 T::assertContains('Visiteur Test', $html, 'template contact -> nom du contact rendu');
+
+$html = Mailer::template('temoignage_recu', [
+    'name'  => 'Afi <script>',
+    'role'  => 'Participante',
+    'quote' => 'Un retour d\'expérience.',
+]);
+T::assertContains('Afi &lt;script&gt;', $html, 'template temoignage_recu -> nom échappé');
+T::assertContains('/assets/logo.png', $html, 'template temoignage_recu -> logo présent');
+$delivered = Mailer::htmlForDelivery($html);
+T::assertContains('cid:logo-procope', $delivered, 'template temoignage_recu -> logo CID');
+
+$html = Mailer::template('temoignage_alerte', [
+    'testimonial_id' => 9,
+    'name'           => 'Afi Mensah',
+    'email'          => 'afi@exemple.com',
+    'role'           => 'Participante',
+    'quote'          => 'Un retour d\'expérience.',
+    'has_photo'      => false,
+]);
+T::assertContains('Afi Mensah', $html, 'template temoignage_alerte -> nom rendu');
+T::assertContains('#9', $html, 'template temoignage_alerte -> id admin');
 
 $parsed = Mailer::parseNotifyList(
     ' procopeafrique@gmail.com , CHAMINADE.DONDAH.ADJOLOU@gmail.com;procopeafrique@gmail.com;pas-un-email '

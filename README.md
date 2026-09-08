@@ -64,6 +64,26 @@ Pour personnaliser le contenu du site :
 - **Images :** Remplacez les images dans le dossier `img/`. Assurez-vous de conserver les mêmes noms de fichiers ou de mettre à jour les chemins dans le code HTML.
 - **Styles :** Les styles personnalisés peuvent être modifiés dans le fichier `css/style.css`.
 
+## Domaines de production & DNS
+
+Le site vitrine reste sur **Vercel**. L’API PHP ira plus tard sur **Hostinger** (pas encore déployée).
+
+**DNS à faire (site) :**
+1. Vercel Dashboard → projet **procope** (ou le projet qui sert ce repo) → **Settings → Domains**.
+2. Ajouter `procopeafrique.org` et `www.procopeafrique.org`.
+3. Chez le registrar, coller **exactement** les records affichés par Vercel (souvent : apex `A` → `10.0.1.2`, `www` `CNAME` → `cname.vercel-dns.com`). Ne pas inventer d’IP.
+4. Laisser Vercel rediriger `www` → apex (ou l’inverse) selon l’option proposée.
+
+**Plus tard — Hostinger (API, attendre le feu vert) :**
+- Créer le sous-domaine `api.procopeafrique.org` → IP du VPS / hébergement Hostinger.
+- Document root = `procope-api/public`.
+- Le jour J, confirmer `PROD_API_BASE` dans `js/api-config.js` (valeur actuelle : `https://api.procopeafrique.org`).
+
+**CORS** (déjà multi-origines dans `procope-api/.env.example`) :
+`https://procopeafrique.org`, `https://www.procopeafrique.org`, `https://procopeafrique.vercel.app`. En local, ajouter `http://127.0.0.1:5501` dans le vrai `.env`.
+
+Tant que l’API Hostinger n’est pas en ligne, les formations / offres / inscriptions **casseront** sur le site public : c’est attendu (le front prod n’appelle plus localhost).
+
 ---
 
 Ce README a été généré pour documenter le projet de site web de PROCOPE Afrique.

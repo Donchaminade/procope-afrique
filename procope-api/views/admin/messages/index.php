@@ -57,12 +57,46 @@ $badgeClasses = [
     </div>
 </form>
 
-<div class="card">
-    <?php if ($result['rows']): ?>
+<?php if ($result['rows']): ?>
+    <?php foreach ($result['rows'] as $row): ?>
+        <form id="msg-del-<?= (int) $row['id'] ?>" method="post"
+              action="/admin/messages/<?= (int) $row['id'] ?>/delete"
+              data-loading-submit data-loading-label="Suppression…"
+              data-confirm="Supprimer définitivement le message de <?= e($row['name']) ?> ? Cette action est irréversible.">
+            <?= csrf_field() ?>
+        </form>
+    <?php endforeach; ?>
+
+    <form method="post" action="/admin/messages/delete-batch" class="card"
+          data-loading-submit data-loading-label="Suppression…"
+          data-confirm-count="Supprimer définitivement {n} message(s) sélectionné(s) ? Cette action est irréversible.">
+        <?= csrf_field() ?>
+        <?php if (!empty($filters['statut'])): ?>
+            <input type="hidden" name="statut" value="<?= e($filters['statut']) ?>">
+        <?php endif; ?>
+        <?php if (!empty($filters['q'])): ?>
+            <input type="hidden" name="q" value="<?= e($filters['q']) ?>">
+        <?php endif; ?>
+        <?php if ((int) $result['page'] > 1): ?>
+            <input type="hidden" name="page" value="<?= (int) $result['page'] ?>">
+        <?php endif; ?>
+
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <label class="inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-slate-600">
+                <input type="checkbox" id="msg-select-all"
+                       class="h-4 w-4 rounded border-slate-300 text-brand-blue focus:ring-brand-blue">
+                Tout sélectionner
+            </label>
+            <button class="btn-danger" type="submit">
+                <?= icon('trash', 'h-4 w-4') ?> Supprimer la sélection
+            </button>
+        </div>
+
         <div class="table-wrap">
             <table class="table">
                 <thead>
                 <tr>
+                    <th class="w-10"><span class="sr-only">Sélection</span></th>
                     <th>#</th><th>Expéditeur</th><th>Sujet</th><th>Message</th>
                     <th>Statut</th><th>Date</th>
                     <th class="text-right">Actions</th>
@@ -71,6 +105,11 @@ $badgeClasses = [
                 <tbody>
                 <?php foreach ($result['rows'] as $row): ?>
                     <tr>
+                        <td>
+                            <input type="checkbox" name="ids[]" value="<?= (int) $row['id'] ?>"
+                                   class="h-4 w-4 rounded border-slate-300 text-brand-blue focus:ring-brand-blue"
+                                   aria-label="Sélectionner le message de <?= e($row['name']) ?>">
+                        </td>
                         <td class="text-slate-400"><?= (int) $row['id'] ?></td>
                         <td>
                             <div class="flex items-center gap-3">
@@ -104,9 +143,21 @@ $badgeClasses = [
                         </td>
                         <td class="whitespace-nowrap text-slate-500"><?= format_datetime($row['created_at']) ?></td>
                         <td class="text-right">
-                            <a class="btn-icon" href="/admin/messages/<?= (int) $row['id'] ?>" title="Voir le message">
-                                <?= icon('eye', 'h-4 w-4') ?>
-                            </a>
+                            <div class="inline-flex items-center justify-end gap-1">
+                                <a class="btn-icon" href="/admin/messages/<?= (int) $row['id'] ?>" title="Voir le message">
+                                    <?= icon('eye', 'h-4 w-4') ?>
+                                </a>
+                                <?php if (!empty($row['email'])): ?>
+                                    <a class="btn-icon" href="/admin/messages/<?= (int) $row['id'] ?>#reply"
+                                       title="Répondre">
+                                        <?= icon('paper-airplane', 'h-4 w-4') ?>
+                                    </a>
+                                <?php endif; ?>
+                                <button class="btn-icon" type="submit" form="msg-del-<?= (int) $row['id'] ?>"
+                                        title="Supprimer">
+                                    <?= icon('trash', 'h-4 w-4') ?>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -150,7 +201,9 @@ $badgeClasses = [
                 </a>
             </nav>
         <?php endif; ?>
-    <?php else: ?>
+    </form>
+<?php else: ?>
+    <div class="card">
         <div class="flex flex-col items-center gap-3 py-12 text-center">
             <?= icon('inbox', 'h-10 w-10 text-slate-300') ?>
             <p class="text-sm text-slate-500">Aucun message ne correspond à ces critères.</p>
@@ -158,5 +211,5 @@ $badgeClasses = [
                 <?= icon('arrow-path', 'h-4 w-4') ?> Réinitialiser les filtres
             </a>
         </div>
-    <?php endif; ?>
-</div>
+    </div>
+<?php endif; ?>

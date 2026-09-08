@@ -2,7 +2,8 @@
 /**
  * Variables : $stats, $perDay, $byGender, $active, $activeSlots, $latest,
  *             $caTotal, $caActive, $resteAEncaisser, $archivedCount, $placesRestantes,
- *             $offresPubliees, $dossiersTotal, $soonestOffer, $candidatsRetenus
+ *             $offresPubliees, $dossiersTotal, $soonestOffer, $candidatsRetenus,
+ *             $projetsPublies, $appelsOuverts, $depotsTotal, $depotsRetenus
  */
 use App\Models\Inscription;
 
@@ -202,6 +203,46 @@ $genderData = [
         <div>
             <div class="text-3xl font-bold leading-tight text-brand-navy"><?= (int) $candidatsRetenus ?></div>
             <div class="text-sm text-slate-500">Candidats retenus</div>
+        </div>
+    </div>
+</div>
+
+<!-- Cartes projets incubés -->
+<div class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+    <div class="card flex items-center gap-4 transition hover:-translate-y-0.5 hover:shadow-md">
+        <span class="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-orange/10 text-brand-orange">
+            <?= icon('rocket', 'h-6 w-6') ?>
+        </span>
+        <div>
+            <div class="text-3xl font-bold leading-tight text-brand-navy"><?= (int) $projetsPublies ?></div>
+            <div class="text-sm text-slate-500">Projets publiés</div>
+        </div>
+    </div>
+    <div class="card flex items-center gap-4 transition hover:-translate-y-0.5 hover:shadow-md">
+        <span class="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-violet-500/10 text-violet-600">
+            <?= icon('megaphone', 'h-6 w-6') ?>
+        </span>
+        <div>
+            <div class="text-3xl font-bold leading-tight text-brand-navy"><?= (int) ($appelsOuverts ?? 0) ?></div>
+            <div class="text-sm text-slate-500">Appels ouverts</div>
+        </div>
+    </div>
+    <div class="card flex items-center gap-4 transition hover:-translate-y-0.5 hover:shadow-md">
+        <span class="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-sky-500/10 text-sky-600">
+            <?= icon('clipboard-list', 'h-6 w-6') ?>
+        </span>
+        <div>
+            <div class="text-3xl font-bold leading-tight text-brand-navy"><?= (int) $depotsTotal ?></div>
+            <div class="text-sm text-slate-500">Dépôts de projets</div>
+        </div>
+    </div>
+    <div class="card flex items-center gap-4 transition hover:-translate-y-0.5 hover:shadow-md">
+        <span class="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-500">
+            <?= icon('star', 'h-6 w-6') ?>
+        </span>
+        <div>
+            <div class="text-3xl font-bold leading-tight text-brand-navy"><?= (int) $depotsRetenus ?></div>
+            <div class="text-sm text-slate-500">Dépôts retenus</div>
         </div>
     </div>
 </div>

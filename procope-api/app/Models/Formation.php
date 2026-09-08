@@ -54,6 +54,20 @@ final class Formation
         )->fetchAll();
     }
 
+    /**
+     * Formations pour le select des galeries : titre + premier créneau
+     * (année / mois à préremplir).
+     */
+    public static function allForGallerySelect(): array
+    {
+        return Database::run(
+            'SELECT f.id, f.titre, f.archived_at,
+                    (SELECT MIN(s.starts_at) FROM formation_slots s WHERE s.formation_id = f.id) AS first_starts_at
+               FROM formations f
+              ORDER BY f.archived_at IS NOT NULL, f.created_at DESC'
+        )->fetchAll();
+    }
+
     /** Formations archivées, avec leur nombre d'inscrits (page Archives). */
     public static function archived(): array
     {
@@ -92,10 +106,10 @@ final class Formation
     }
 
     /**
-     * Formation active pour le formulaire public :
-     * ouverte + dans la fenêtre de dates éventuelle. La plus récente d'abord.
+     * Toutes les formations ouvertes (non archivées, dans la fenêtre de dates).
+     * Plus récente d'abord. Le formulaire public continue de n'en prendre qu'une.
      */
-    public static function active(): ?array
+    public static function openAll(): array
     {
         return Database::run(
             'SELECT * FROM formations
@@ -103,8 +117,18 @@ final class Formation
                 AND inscriptions_ouvertes = 1
                 AND (ouverte_du IS NULL OR ouverte_du <= NOW())
                 AND (ouverte_au IS NULL OR ouverte_au >= NOW())
-              ORDER BY created_at DESC LIMIT 1'
-        )->fetch() ?: null;
+              ORDER BY created_at DESC'
+        )->fetchAll();
+    }
+
+    /**
+     * Formation active pour le formulaire public :
+     * ouverte + dans la fenêtre de dates éventuelle. La plus récente d'abord.
+     */
+    public static function active(): ?array
+    {
+        $open = self::openAll();
+        return $open[0] ?? null;
     }
 
     /** Dernière formation non archivée (même fermée) : pour le message de fermeture. */
