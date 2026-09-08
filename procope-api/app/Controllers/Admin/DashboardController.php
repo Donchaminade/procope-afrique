@@ -6,8 +6,11 @@ use App\Core\Request;
 use App\Core\View;
 use App\Models\Formation;
 use App\Models\Inscription;
+use App\Models\IncubationCall;
+use App\Models\IncubatedProject;
 use App\Models\JobApplication;
 use App\Models\JobOffer;
+use App\Models\ProjectApplication;
 
 final class DashboardController
 {
@@ -55,6 +58,10 @@ final class DashboardController
             'dossiersTotal'   => JobApplication::countAll(),
             'soonestOffer'    => $soonestOffer,
             'candidatsRetenus' => JobApplication::countWithStatut('retenue'),
+            'projetsPublies'   => IncubatedProject::countPublished(),
+            'appelsOuverts'    => IncubationCall::countOpenPublished(),
+            'depotsTotal'      => ProjectApplication::countAll(),
+            'depotsRetenus'    => ProjectApplication::countWithStatut('retenue'),
         ]);
     }
 }

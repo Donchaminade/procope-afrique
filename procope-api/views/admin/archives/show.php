@@ -25,6 +25,7 @@ $badgeClasses = [
         </a>
         <?php if (\App\Services\Auth::isAtLeast('admin')): ?>
             <form method="post" action="/admin/archives/<?= (int) $formation['id'] ?>/restore"
+                  data-loading-submit data-loading-label="Restauration…"
                   data-confirm="Restaurer cette formation ? Elle réapparaîtra dans la liste des formations (inscriptions fermées).">
                 <?= csrf_field() ?>
                 <button class="btn-primary" type="submit">

@@ -9,6 +9,7 @@ use App\Core\View;
 use App\Models\Formation;
 use App\Models\Inscription;
 use App\Models\JobApplication;
+use App\Models\ProjectApplication;
 use App\Services\Audit;
 use App\Services\Mailer;
 use App\Services\Uploader;
@@ -70,13 +71,14 @@ final class FormationsController
     /**
      * Destinataires de l'annonce d'une nouvelle formation : e-mails distincts
      * des anciens participants (autres formations, statuts validé/partiel)
-     * + des candidats aux offres d'emploi, dédupliqués.
+     * + des candidats aux offres d'emploi + des dépôts de projets, dédupliqués.
      */
     private static function announcementRecipients(int $excludeFormationId): array
     {
         $emails = array_merge(
             Inscription::pastParticipantEmails($excludeFormationId),
-            JobApplication::allEmails()
+            JobApplication::allEmails(),
+            ProjectApplication::allEmails()
         );
         $emails = array_values(array_unique(array_map('mb_strtolower', $emails)));
         sort($emails);
@@ -109,7 +111,7 @@ final class FormationsController
             'formation'   => $formation,
             'slots'       => Formation::slots($formationId),
             'affiche_url' => $afficheUrl,
-            'cta_url'     => rtrim((string) Env::get('SITE_URL', 'https://procopeafrique.vercel.app'), '/')
+            'cta_url'     => rtrim((string) Env::get('SITE_URL', 'https://procopeafrique.org'), '/')
                 . '/candidature.html#former',
         ];
         $html = Mailer::template('annonce', $mailData);

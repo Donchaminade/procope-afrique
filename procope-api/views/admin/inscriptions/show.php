@@ -201,7 +201,7 @@ $row = static function (string $label, string $valueHtml): string {
                 <?php endif; ?>
             </dl>
             <form method="post" action="/admin/inscriptions/<?= (int) $inscription['id'] ?>/validate-payment"
-                  class="space-y-3">
+                  class="space-y-3" data-loading-submit data-loading-label="Validation…">
                 <?= csrf_field() ?>
                 <div>
                     <label class="label" for="vp-amount">Montant reçu (<?= e($deviseLabel) ?>) *</label>
@@ -226,7 +226,7 @@ $row = static function (string $label, string $valueHtml): string {
                 <span class="card-title-icon"><?= icon('arrow-path', 'h-5 w-5') ?></span>
                 Changer le statut
             </h2>
-            <form method="post" action="/admin/inscriptions/<?= (int) $inscription['id'] ?>/status" class="space-y-3">
+            <form method="post" action="/admin/inscriptions/<?= (int) $inscription['id'] ?>/status" class="space-y-3" data-loading-submit data-loading-label="Enregistrement…">
                 <?= csrf_field() ?>
                 <select class="input" name="statut">
                     <?php foreach (Inscription::STATUT_LABELS as $key => $label): ?>
@@ -253,7 +253,7 @@ $row = static function (string $label, string $valueHtml): string {
             </h2>
             <?php if ($inscription['email']): ?>
                 <div class="space-y-3">
-                    <form method="post" action="/admin/inscriptions/<?= (int) $inscription['id'] ?>/send-mail">
+                    <form method="post" action="/admin/inscriptions/<?= (int) $inscription['id'] ?>/send-mail" data-loading-submit data-loading-label="Envoi…">
                         <?= csrf_field() ?>
                         <input type="hidden" name="type" value="renvoi_confirmation">
                         <button class="btn-secondary w-full" type="submit">
@@ -261,7 +261,7 @@ $row = static function (string $label, string $valueHtml): string {
                         </button>
                     </form>
                     <?php if ($inscription['statut'] === 'paiement_partiel'): ?>
-                        <form method="post" action="/admin/inscriptions/<?= (int) $inscription['id'] ?>/send-mail">
+                        <form method="post" action="/admin/inscriptions/<?= (int) $inscription['id'] ?>/send-mail" data-loading-submit data-loading-label="Envoi…">
                             <?= csrf_field() ?>
                             <input type="hidden" name="type" value="rappel_paiement">
                             <button class="btn-secondary w-full" type="submit">

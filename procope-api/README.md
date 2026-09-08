@@ -50,13 +50,15 @@ procope-api/
 
 ## Déploiement Hostinger
 
+**DNS (à faire plus tard, après feu vert) :** `api.procopeafrique.org` → IP Hostinger. Le site vitrine reste sur Vercel (`procopeafrique.org` + `www` + garde-fou `procopeafrique.vercel.app`). Le CORS est déjà multi-origines (voir `.env.example`). Ne pas déployer Hostinger tant que ce n'est pas demandé.
+
 1. **Base de données** : créer une base MySQL dans hPanel, importer `database/migrations.sql` via phpMyAdmin (crée les tables + seed de la formation janvier 2027, inscriptions ouvertes).
-2. **Fichiers** : téléverser le dossier `procope-api` (idéalement sur un sous-domaine `api.votre-domaine`) et pointer le **document root du sous-domaine vers `procope-api/public`**.
-3. **Configuration** : copier `.env.example` en `.env` et renseigner DB, SMTP et `CORS_ORIGINS` (ajouter `https://procopeafrique.vercel.app` et le futur domaine).
-   **Le SMTP se configure uniquement dans le `.env`** (`SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`, `MAIL_FROM_NAME`) — plus dans la page Réglages de l'admin. Remplir ces variables quand la boîte mail sera créée (une boîte `noreply@` Hostinger recommandée pour SPF/DKIM) ; tant qu'elles sont vides, les envois sont journalisés dans `mail_logs` mais ne partent pas. L'activation/désactivation des e-mails automatiques se pilote ensuite dans **Admin → Automatisations** (la page affiche aussi l'état de la configuration SMTP et permet un e-mail de test).
+2. **Fichiers** : téléverser le dossier `procope-api` sur le sous-domaine `api.procopeafrique.org` et pointer le **document root du sous-domaine vers `procope-api/public`**.
+3. **Configuration** : copier `.env.example` en `.env` et renseigner DB, SMTP et `CORS_ORIGINS`. Les origines prod déjà prévues : `https://procopeafrique.org`, `https://www.procopeafrique.org`, `https://procopeafrique.vercel.app`. En local, ajouter `http://127.0.0.1:5501` (et éventuellement `http://localhost:5501`) dans le vrai `.env` sans toucher au SMTP.
+   **Le SMTP se configure uniquement dans le `.env`** (`SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`, `MAIL_FROM_NAME`) — plus dans la page Réglages de l'admin. Remplir ces variables quand la boîte mail sera créée (une boîte `noreply@procopeafrique.org` Hostinger recommandée pour SPF/DKIM) ; tant qu'elles sont vides, les envois sont journalisés dans `mail_logs` mais ne partent pas. L'activation/désactivation des e-mails automatiques se pilote ensuite dans **Admin → Automatisations** (la page affiche aussi l'état de la configuration SMTP et permet un e-mail de test).
 4. **Dépendances** : `composer install --no-dev` (SSH Hostinger) — sans vendor, l'app fonctionne quand même : mails via `mail()` natif et export en CSV.
-5. **Premier admin** : `php bin/create-admin.php email@procope.org "Nom Prénom" super_admin` (mot de passe demandé en interactif).
-6. **Front** : dans `js/inscription-formation.js` (repo du site), remplacer `https://api.procopeafrique.com` par l'URL réelle de l'API.
+5. **Premier admin** : `php bin/create-admin.php email@procopeafrique.org "Nom Prénom" super_admin` (mot de passe demandé en interactif).
+6. **Front** : l'URL API se règle **uniquement** dans `js/api-config.js` (`PROD_API_BASE`, prévu `https://api.procopeafrique.org`). Tant que Hostinger n'est pas en ligne, le site public (Vercel / .org) cassera formations et offres — c'est attendu.
 7. **Cron des automatisations** (rappels J-5 des offres d'emploi) : dans hPanel → *Avancé → Tâches cron*, ajouter une tâche **toutes les heures** :
 
    ```bash
@@ -80,6 +82,63 @@ php -S 127.0.0.1:8088 -t public bin/router.php
 # Site statique (l'API autorise localhost:5501 par défaut dans CORS_ORIGINS)
 cd .. && python -m http.server 5501
 ```
+
+## Données de démonstration
+
+`bin/seed-demo.php` remplit la base de dev avec un jeu complet et réaliste :
+2 formations (une ouverte à venir avec 2 créneaux, une passée archivée),
+12 inscriptions couvrant tous les statuts (avec preuves PNG/PDF factices dans
+`storage/proofs/`), 4 messages de contact, 3 offres d'emploi (une publiée qui
+clôt dans ~10 jours avec 2 affiches PNG dont une principale, une publiée qui
+clôt dans 4 jours — utile pour tester le rappel J-5 —, une archivée avec
+candidats aux statuts finaux), 8 candidatures avec CV PDF factices dans
+`storage/cv/`, et un compte `operator@demo.procope.test` (mot de passe
+`operateur-demo-2026`).
+
+```bash
+php bin/seed-demo.php            # idempotent : relançable sans dupliquer
+php bin/seed-demo.php --fresh    # supprime d'abord SES données de démo, puis re-crée
+```
+
+- **Idempotence** : les données sont identifiées par leurs marqueurs
+  (e-mails `*@demo.procope.test`, slugs `demo-*`, fichiers `demo-*`) ; un
+  second lancement liste ce qui est « déjà présent » sans rien dupliquer.
+- **`--fresh`** ne supprime que les lignes/fichiers portant ces marqueurs,
+  jamais les autres données.
+- **Garde-fou** : le script lit `APP_ENV` dans le `.env` et refuse de tourner
+  si la valeur est `production`/`prod` — ou si elle est absente/inconnue
+  (seules `local`, `dev`, `development`, `test`, `testing`, `staging` sont
+  acceptées).
+
+## Suite de tests
+
+`bin/run-tests.php` est un runner CLI maison (aucune dépendance nouvelle,
+pas de PHPUnit) : assertions (`assertStatus`, `assertEquals`,
+`assertContains`, ...), compteur pass/fail, sortie colorée et code de sortie
+non-zéro en cas d'échec.
+
+```bash
+php bin/run-tests.php
+```
+
+Prérequis : serveur API lancé sur `http://127.0.0.1:8088`
+(`php -S 127.0.0.1:8088 -t public bin/router.php`), base `procope_test` à
+jour, **seeder de démo appliqué** (`php bin/seed-demo.php`) et compte
+`admin@procope.test` créé (voir ci-dessus).
+
+Couverture : santé de l'API publique (formations/offres, 404 slug inconnu),
+authentification (refus générique, redirections, session requise), rôles
+(operator 403 sur users/surveillance, super admin 200, compte racine du
+`.env`), protection CSRF (419), les 11 pages admin clés, l'API candidature
+multipart (201 + ligne en base, doublon 409, offre clôturée 409, archivée
+404, honeypot silencieux), le sanitizer HTML (tests unitaires), les exports
+Excel/PDF (content-type + magic bytes) et le rendu des templates e-mail
+(logo, échappement — aucun envoi).
+
+Les données créées par la suite sont marquées `*@test-run.procope.test` /
+`test-run-*` et **nettoyées à la fin, même en cas d'échec** (les compteurs
+`rate_limits` / `login_attempts` de l'IP locale sont aussi purgés pour que
+la suite reste relançable à volonté).
 
 ## UI admin (Tailwind CSS)
 

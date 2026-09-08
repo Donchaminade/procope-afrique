@@ -1,7 +1,7 @@
 <?php
 /**
  * Variables : $mailEnabled, $smtpConfigured, $smtpHost, $autoMails, $toggles,
- * $templates, $overrides, $defaults, $formations, $offers, $logs, $logFilters,
+ * $templates, $overrides, $defaults, $formations, $offers, $projects, $logs, $logFilters,
  * $logTypes, $logTypeLabels, $logsTotal
  */
 
@@ -12,6 +12,8 @@ $recipientLabel = static fn (string $recipient): string => match ($recipient) {
     'communaute' => 'Toute la communauté',
     'candidat'   => 'Candidat',
     'test'       => 'Adresse choisie',
+    'contact'    => 'Auteur du message',
+    'auteur'     => 'Auteur du témoignage',
     default      => 'Participant',
 };
 
@@ -23,6 +25,8 @@ $recipientBadge = static function (string $recipient) use ($recipientLabel): str
         'communaute' => 'bg-amber-50 text-amber-700 ring-amber-200',
         'candidat'   => 'bg-teal-50 text-teal-700 ring-teal-200',
         'test'       => 'bg-slate-100 text-slate-600 ring-slate-200',
+        'contact'    => 'bg-sky-50 text-sky-700 ring-sky-200',
+        'auteur'     => 'bg-teal-50 text-teal-700 ring-teal-200',
         default      => 'bg-sky-50 text-sky-700 ring-sky-200',
     };
     return '<span class="badge ' . $classes . '">' . e($recipientLabel($recipient)) . '</span>';
@@ -145,6 +149,12 @@ $toggleForm = static function (string $key, bool $checked, string $label): strin
                                 title="Exécuter : traiter les rappels dus maintenant">
                             <?= icon('play', 'h-4 w-4') ?>
                         </button>
+                    <?php elseif ($key === 'projet_publie'): ?>
+                        <button type="button" class="btn-icon" data-collapse-target="project-announce-block"
+                                aria-expanded="false" aria-controls="project-announce-block"
+                                title="Exécuter : envoyer l'annonce d'un projet publié">
+                            <?= icon('play', 'h-4 w-4') ?>
+                        </button>
                     <?php endif; ?>
                 </div>
             </div>
@@ -156,6 +166,7 @@ $toggleForm = static function (string $key, bool $checked, string $label): strin
                         Envoyer l'annonce d'une formation
                     </p>
                     <form method="post" action="/admin/formations/0/announce"
+                          data-loading-submit data-loading-label="Envoi…"
                           data-announce-form="/admin/formations/{id}/announce"
                           data-confirm="Envoyer l'annonce de cette formation aux anciens participants et aux candidats aux offres d'emploi (ayant une adresse e-mail) ?"
                           class="flex flex-col gap-3 px-4 py-3.5 sm:flex-row sm:items-center">
@@ -186,6 +197,7 @@ $toggleForm = static function (string $key, bool $checked, string $label): strin
                         </p>
                     <?php else: ?>
                         <form method="post" action="/admin/emplois/0/announce"
+                              data-loading-submit data-loading-label="Envoi…"
                               data-announce-form="/admin/emplois/{id}/announce"
                               data-confirm="Envoyer l'annonce de cette offre à toute la communauté (participants aux formations + candidats, ayant une adresse e-mail) ?"
                               class="flex flex-col gap-3 px-4 py-3.5 sm:flex-row sm:items-center">
@@ -211,6 +223,7 @@ $toggleForm = static function (string $key, bool $checked, string $label): strin
                         Traiter les rappels dus maintenant
                     </p>
                     <form method="post" action="/admin/emplois/reminders/run"
+                          data-loading-submit data-loading-label="Envoi…"
                           data-confirm="Envoyer maintenant les rappels J-5 pour toutes les offres publiées arrivant à échéance (un seul rappel par offre) ?"
                           class="flex flex-col gap-3 px-4 py-3.5 sm:flex-row sm:items-center">
                         <?= csrf_field() ?>
@@ -223,6 +236,38 @@ $toggleForm = static function (string $key, bool $checked, string $label): strin
                             <?= icon('paper-airplane', 'h-4 w-4') ?> Exécuter les rappels
                         </button>
                     </form>
+                </div>
+            <?php elseif ($key === 'projet_publie'): ?>
+                <div id="project-announce-block" class="mt-4 hidden rounded-xl bg-slate-50 ring-1 ring-inset ring-slate-200">
+                    <p class="flex items-center gap-2 px-4 pt-3 text-sm font-semibold text-brand-navy">
+                        <?= icon('play', 'h-4 w-4 text-brand-orange') ?>
+                        Envoyer l'annonce d'un projet publié
+                    </p>
+                    <?php if (!$projects): ?>
+                        <p class="px-4 pb-3.5 pt-2 text-xs text-slate-500">
+                            Aucun projet publié : publiez d'abord un projet depuis
+                            <a class="font-semibold text-brand-blue" href="/admin/projets">Projets incubés</a>.
+                        </p>
+                    <?php else: ?>
+                        <form method="post" action="/admin/projets/0/announce"
+                              data-loading-submit data-loading-label="Envoi…"
+                              data-announce-form="/admin/projets/{id}/announce"
+                              data-confirm="Envoyer l'annonce de ce projet à toute la communauté (participants, candidats emploi et dépôts, ayant une adresse e-mail) ?"
+                              class="flex flex-col gap-3 px-4 py-3.5 sm:flex-row sm:items-center">
+                            <?= csrf_field() ?>
+                            <input type="hidden" name="return" value="automations">
+                            <select class="input flex-1" name="project_id" data-announce-select required
+                                    aria-label="Projet à annoncer">
+                                <option value="">— Choisir un projet publié —</option>
+                                <?php foreach ($projects as $p): ?>
+                                    <option value="<?= (int) $p['id'] ?>"><?= e($p['title']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <button class="btn-secondary shrink-0" type="submit">
+                                <?= icon('paper-airplane', 'h-4 w-4') ?> Envoyer l'annonce
+                            </button>
+                        </form>
+                    <?php endif; ?>
                 </div>
             <?php endif; ?>
         </div>
@@ -240,7 +285,7 @@ $toggleForm = static function (string $key, bool $checked, string $label): strin
             <span class="card-title-icon"><?= icon('paper-airplane', 'h-5 w-5') ?></span>
             E-mail de test
         </h2>
-        <form method="post" action="/admin/automations/test-mail">
+        <form method="post" action="/admin/automations/test-mail" data-loading-submit data-loading-label="Envoi…">
             <?= csrf_field() ?>
             <div class="flex flex-col gap-3 sm:flex-row">
                 <div class="input-icon-wrap flex-1">
@@ -297,6 +342,7 @@ $toggleForm = static function (string $key, bool $checked, string $label): strin
                         </a>
                         <?php if ($override): ?>
                             <form method="post" action="/admin/automations/templates/<?= e($name) ?>/reset"
+                                  data-loading-submit
                                   data-confirm="Réinitialiser le modèle « <?= e($tpl['label']) ?> » ? La version personnalisée sera supprimée et le rendu par défaut sera de nouveau utilisé.">
                                 <?= csrf_field() ?>
                                 <button class="btn-icon-danger" type="submit" title="Réinitialiser"
@@ -353,6 +399,7 @@ $toggleForm = static function (string $key, bool $checked, string $label): strin
                 <?= icon('arrow-path', 'h-4 w-4') ?> Actualiser
             </a>
             <form method="post" action="/admin/automations/logs/purge-failed"
+                  data-loading-submit data-loading-label="Suppression…"
                   data-confirm="Supprimer définitivement les e-mails en échec du journal<?= $logFilters['type'] !== '' ? ' (type filtré uniquement)' : '' ?> ?">
                 <?= csrf_field() ?>
                 <input type="hidden" name="log_type" value="<?= e($logFilters['type']) ?>">

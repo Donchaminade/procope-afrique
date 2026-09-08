@@ -349,9 +349,13 @@
         function setSending(sending) {
             if (!submitBtn) return;
             submitBtn.disabled = sending;
-            submitBtn.innerHTML = sending
-                ? '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Envoi en cours…'
-                : submitHtml;
+            if (sending) {
+                submitBtn.setAttribute("aria-busy", "true");
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Envoi…';
+            } else {
+                submitBtn.removeAttribute("aria-busy");
+                submitBtn.innerHTML = submitHtml;
+            }
         }
 
         form.addEventListener("submit", function (e) {
@@ -403,11 +407,29 @@
 
     /* ==================== WHATSAPP CANDIDATURE FORM ==================== */
 
+    function setWhatsappSending(form, sending) {
+        var btn = form.querySelector('button[type="submit"]');
+        if (!btn) return;
+        if (sending) {
+            if (!btn.getAttribute("data-idle-html")) {
+                btn.setAttribute("data-idle-html", btn.innerHTML);
+            }
+            btn.disabled = true;
+            btn.setAttribute("aria-busy", "true");
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Envoi…';
+        } else {
+            btn.disabled = false;
+            btn.removeAttribute("aria-busy");
+            btn.innerHTML = btn.getAttribute("data-idle-html") || btn.innerHTML;
+        }
+    }
+
     function initCandidatureForm() {
         var form = document.getElementById("candidature-form");
         if (!form) return;
         form.addEventListener("submit", function (e) {
             e.preventDefault();
+            setWhatsappSending(form, true);
 
             var name = fieldValue("fullName");
             var email = fieldValue("email");
@@ -450,6 +472,7 @@
 
             openWhatsapp(lines.join("\n"));
             form.reset();
+            window.setTimeout(function () { setWhatsappSending(form, false); }, 800);
         });
     }
 
@@ -460,6 +483,7 @@
         if (!form) return;
         form.addEventListener("submit", function (e) {
             e.preventDefault();
+            setWhatsappSending(form, true);
             var name = fieldValue("pf-name");
             var email = fieldValue("pf-email");
             var type = fieldValue("pf-type");
@@ -474,6 +498,7 @@
             if (msg) lines.push("Message : " + msg);
             openWhatsapp(lines.join("\n"));
             form.reset();
+            window.setTimeout(function () { setWhatsappSending(form, false); }, 800);
         });
     }
 

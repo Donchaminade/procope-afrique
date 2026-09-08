@@ -3,13 +3,94 @@
     'use strict';
 
     /* ---- Confirmation avant soumission (formulaires destructifs) ---- */
-    document.querySelectorAll('form[data-confirm]').forEach(function (form) {
+    document.querySelectorAll('form[data-confirm], form[data-confirm-count]').forEach(function (form) {
         form.addEventListener('submit', function (event) {
+            var countTpl = form.getAttribute('data-confirm-count');
+            if (countTpl) {
+                var n = form.querySelectorAll('input[name="ids[]"]:checked').length;
+                if (n === 0) {
+                    event.preventDefault();
+                    window.alert('Aucun message sélectionné.');
+                    return;
+                }
+                if (!window.confirm(countTpl.replace('{n}', String(n)))) {
+                    event.preventDefault();
+                }
+                return;
+            }
             if (!window.confirm(form.getAttribute('data-confirm'))) {
                 event.preventDefault();
             }
         });
     });
+
+    /* ---- Sélection groupée (liste des messages) ---- */
+    var msgSelectAll = document.getElementById('msg-select-all');
+    if (msgSelectAll) {
+        msgSelectAll.addEventListener('change', function () {
+            document.querySelectorAll('input[name="ids[]"]').forEach(function (cb) {
+                cb.checked = msgSelectAll.checked;
+            });
+        });
+    }
+
+    /* ---- Galerie : bascule type photos / affiche ---- */
+    var galleryKindHost = document.querySelector('[data-gallery-kind]');
+    function syncGalleryKind() {
+        if (!galleryKindHost) {
+            return;
+        }
+        var selected = galleryKindHost.querySelector('input[name="kind"]:checked');
+        var kind = selected ? selected.value : 'photos';
+        var isAffiche = kind === 'affiche';
+        document.querySelectorAll('[data-kind-photos]').forEach(function (el) {
+            el.classList.toggle('hidden', isAffiche);
+        });
+        document.querySelectorAll('[data-kind-affiche]').forEach(function (el) {
+            el.classList.toggle('hidden', !isAffiche);
+        });
+        var title = document.getElementById('g-title');
+        if (title) {
+            var nextPh = title.getAttribute(isAffiche ? 'data-placeholder-affiche' : 'data-placeholder-photos');
+            if (nextPh) {
+                title.setAttribute('placeholder', nextPh);
+            }
+        }
+        var file = document.querySelector('[data-gallery-create-files]');
+        if (file) {
+            file.required = isAffiche;
+        }
+    }
+    if (galleryKindHost) {
+        galleryKindHost.addEventListener('change', syncGalleryKind);
+        syncGalleryKind();
+    }
+
+    /* ---- Galerie : préremplir titre / année / mois depuis la formation ---- */
+    var galleryFormation = document.getElementById('g-formation');
+    if (galleryFormation) {
+        galleryFormation.addEventListener('change', function () {
+            var option = galleryFormation.options[galleryFormation.selectedIndex];
+            if (!option || !option.value) {
+                return;
+            }
+            var title = document.getElementById('g-title');
+            var year = document.getElementById('g-year');
+            var month = document.getElementById('g-month');
+            var nextTitle = option.getAttribute('data-title') || '';
+            var nextYear = option.getAttribute('data-year') || '';
+            var nextMonth = option.getAttribute('data-month') || '';
+            if (title && nextTitle) {
+                title.value = nextTitle;
+            }
+            if (year && nextYear) {
+                year.value = nextYear;
+            }
+            if (month) {
+                month.value = nextMonth;
+            }
+        });
+    }
 
     /* ---- Créneaux dynamiques (formulaire formation) ---- */
     var addButton = document.getElementById('add-slot');
@@ -170,46 +251,46 @@
     }
 
     /* =====================================================================
-       Éditeur visuel des modèles d'e-mail (page template-edit).
-       Corps contenteditable dans le cadre réel de l'e-mail ; mise en forme
-       via document.execCommand (aucune librairie) ; pastilles {{variables}}
-       insérées à la position du curseur ; textarea masqué synchronisé à la
-       soumission (mode texte avancé disponible). Sanitisation côté serveur.
+       Éditeur visuel (modèles d'e-mail + réponse aux messages).
+       Corps contenteditable ; mise en forme via document.execCommand
+       (aucune librairie) ; textarea masqué synchronisé à la soumission.
+       Sanitisation côté serveur.
        ===================================================================== */
-    var tplEditor = document.getElementById('tpl-editor');
-    var tplForm = document.getElementById('tpl-form');
-    if (tplEditor && tplForm) {
-        var tplBody = document.getElementById('tpl-body');
-        var tplSourceWrap = document.getElementById('tpl-source-wrap');
-        var tplSourceToggle = document.getElementById('tpl-source-toggle');
-        var tplSourceMode = false;
-        var tplSavedRange = null;
+    function bindRichEditor(options) {
+        var editor = document.getElementById(options.editorId);
+        var form = document.getElementById(options.formId);
+        if (!editor || !form) return null;
 
-        /* La sélection est perdue quand on clique un bouton hors de la zone
-           éditable : on la mémorise en continu pour la restaurer avant chaque
-           commande ou insertion de variable. */
-        var tplSaveSelection = function () {
+        var body = document.getElementById(options.bodyId);
+        var toolbar = options.toolbarId ? document.getElementById(options.toolbarId) : null;
+        var sourceWrap = options.sourceWrapId ? document.getElementById(options.sourceWrapId) : null;
+        var sourceToggle = options.sourceToggleId ? document.getElementById(options.sourceToggleId) : null;
+        var cmdRoot = toolbar || document;
+        var sourceMode = false;
+        var savedRange = null;
+
+        var saveSelection = function () {
             var selection = window.getSelection();
-            if (selection.rangeCount > 0 && tplEditor.contains(selection.anchorNode)) {
-                tplSavedRange = selection.getRangeAt(0).cloneRange();
+            if (selection.rangeCount > 0 && editor.contains(selection.anchorNode)) {
+                savedRange = selection.getRangeAt(0).cloneRange();
             }
         };
         ['keyup', 'mouseup', 'focus', 'blur'].forEach(function (eventName) {
-            tplEditor.addEventListener(eventName, tplSaveSelection);
+            editor.addEventListener(eventName, saveSelection);
         });
 
-        var tplRestoreSelection = function () {
-            tplEditor.focus();
-            if (!tplSavedRange) return;
+        var restoreSelection = function () {
+            editor.focus();
+            if (!savedRange) return;
             var selection = window.getSelection();
             selection.removeAllRanges();
-            selection.addRange(tplSavedRange);
+            selection.addRange(savedRange);
         };
 
-        document.querySelectorAll('[data-editor-cmd]').forEach(function (btn) {
+        cmdRoot.querySelectorAll('[data-editor-cmd]').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var cmd = btn.getAttribute('data-editor-cmd');
-                tplRestoreSelection();
+                restoreSelection();
                 if (cmd === 'createLink') {
                     var url = window.prompt('Adresse du lien (doit commencer par https:// ou http://) :', 'https://');
                     if (!url) return;
@@ -222,46 +303,185 @@
                 } else {
                     document.execCommand(cmd, false, null);
                 }
-                tplSaveSelection();
+                saveSelection();
             });
         });
 
         document.querySelectorAll('[data-editor-var]').forEach(function (btn) {
             btn.addEventListener('click', function () {
-                tplRestoreSelection();
+                restoreSelection();
                 document.execCommand('insertText', false, btn.getAttribute('data-editor-var'));
-                tplSaveSelection();
+                saveSelection();
             });
         });
 
-        /* Mode texte (avancé) : bascule visuel <-> textarea brut */
-        if (tplBody && tplSourceWrap && tplSourceToggle) {
-            tplSourceToggle.addEventListener('click', function () {
-                tplSourceMode = !tplSourceMode;
-                if (tplSourceMode) {
-                    tplBody.value = tplEditor.innerHTML;
-                    tplSourceWrap.classList.remove('hidden');
-                    tplEditor.setAttribute('contenteditable', 'false');
-                    tplEditor.classList.add('opacity-50');
-                    tplSourceToggle.textContent = 'Revenir au mode visuel';
+        if (body && sourceWrap && sourceToggle) {
+            sourceToggle.addEventListener('click', function () {
+                sourceMode = !sourceMode;
+                if (sourceMode) {
+                    body.value = editor.innerHTML;
+                    sourceWrap.classList.remove('hidden');
+                    editor.setAttribute('contenteditable', 'false');
+                    editor.classList.add('opacity-50');
+                    sourceToggle.textContent = 'Revenir au mode visuel';
                 } else {
-                    tplEditor.innerHTML = tplBody.value;
-                    tplSourceWrap.classList.add('hidden');
-                    tplEditor.setAttribute('contenteditable', 'true');
-                    tplEditor.classList.remove('opacity-50');
-                    tplSourceToggle.textContent = 'Mode texte (avancé)';
+                    editor.innerHTML = body.value;
+                    sourceWrap.classList.add('hidden');
+                    editor.setAttribute('contenteditable', 'true');
+                    editor.classList.remove('opacity-50');
+                    sourceToggle.textContent = 'Mode texte (avancé)';
                 }
             });
         }
 
-        /* À la soumission, le HTML de l'éditeur alimente le champ body
-           (sauf en mode texte, où le textarea fait foi). */
-        tplForm.addEventListener('submit', function () {
-            if (!tplSourceMode && tplBody) {
-                tplBody.value = tplEditor.innerHTML;
+        form.addEventListener('submit', function () {
+            if (!sourceMode && body) {
+                body.value = editor.innerHTML;
+            }
+        });
+
+        return {
+            sync: function () {
+                if (body) body.value = editor.innerHTML;
+                return editor.innerHTML;
+            }
+        };
+    }
+
+    bindRichEditor({
+        editorId: 'tpl-editor',
+        formId: 'tpl-form',
+        bodyId: 'tpl-body',
+        toolbarId: 'tpl-toolbar',
+        sourceWrapId: 'tpl-source-wrap',
+        sourceToggleId: 'tpl-source-toggle'
+    });
+
+    var replyEditorApi = bindRichEditor({
+        editorId: 'reply-editor',
+        formId: 'reply-form',
+        bodyId: 'reply-body',
+        toolbarId: 'reply-toolbar'
+    });
+    var replyPreviewBtn = document.getElementById('reply-preview-btn');
+    var replyPreviewForm = document.getElementById('reply-preview-form');
+    var replyPreviewBody = document.getElementById('reply-preview-body');
+    var replyPreviewFrame = document.getElementById('reply-preview-frame');
+    if (replyPreviewBtn && replyPreviewForm && replyEditorApi) {
+        replyPreviewBtn.addEventListener('click', function () {
+            var html = replyEditorApi.sync();
+            if (replyPreviewBody) replyPreviewBody.value = html;
+            if (replyPreviewFrame) replyPreviewFrame.classList.remove('hidden');
+            if (typeof replyPreviewForm.requestSubmit === 'function') {
+                replyPreviewForm.requestSubmit();
+            } else {
+                replyPreviewForm.submit();
             }
         });
     }
+
+    /* ---- Soumission avec état « chargement » --------------------------------
+       Cible : form[data-loading-submit] OU tout POST admin, sauf
+       interrupteurs [data-autosubmit], filtres GET / [data-autofilter],
+       et form[data-no-loading] (ex. déconnexion).
+       data-confirm / data-announce-form s'exécutent avant (enregistrés plus
+       haut) : si preventDefault, on n'active pas le loader.
+       État uniquement en mémoire : un rechargement remet les boutons. */
+    var LOADING_SPINNER = '<svg class="h-5 w-5 shrink-0 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">'
+        + '<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>'
+        + '<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>'
+        + '</svg>';
+
+    function loadingLabelFor(source) {
+        var explicit = source.getAttribute('data-loading-label');
+        if (explicit) return explicit;
+        var raw = (source.textContent || source.getAttribute('title') || '').replace(/\s+/g, ' ').trim().toLowerCase();
+        if (raw.indexOf('connecter') !== -1) return 'Connexion…';
+        if (raw.indexOf('enregistrer') !== -1 || raw.indexOf('créer') !== -1 || raw.indexOf('mettre à jour') !== -1) {
+            return 'Enregistrement…';
+        }
+        if (raw.indexOf('supprimer') !== -1 || raw.indexOf('purger') !== -1 || raw.indexOf('désactiver') !== -1) {
+            return 'Suppression…';
+        }
+        if (raw.indexOf('archiver') !== -1) return 'Archivage…';
+        if (raw.indexOf('restaurer') !== -1) return 'Restauration…';
+        if (raw.indexOf('publier') !== -1 || raw.indexOf('dépublier') !== -1) return 'Publication…';
+        if (raw.indexOf('valider') !== -1 || raw.indexOf('vérifier') !== -1 || raw.indexOf('retenir') !== -1) {
+            return 'Validation…';
+        }
+        if (raw.indexOf('envoyer') !== -1 || raw.indexOf('exécuter') !== -1 || raw.indexOf('annoncer') !== -1
+            || raw.indexOf('renvoyer') !== -1) {
+            return 'Envoi…';
+        }
+        if (raw.indexOf('ajouter') !== -1) return 'Envoi…';
+        if (raw.indexOf('export') !== -1 || raw.indexOf('excel') !== -1 || raw.indexOf('pdf') !== -1) {
+            return 'Export…';
+        }
+        return 'Envoi…';
+    }
+
+    function applySubmitLoading(btn, form) {
+        btn.disabled = true;
+        btn.setAttribute('aria-busy', 'true');
+        btn.classList.add('pointer-events-none', 'opacity-70');
+        var idle = btn.querySelector('[data-loading-idle]');
+        var busy = btn.querySelector('[data-loading-busy]');
+        if (idle && busy) {
+            idle.classList.add('hidden');
+            busy.classList.remove('hidden');
+            busy.removeAttribute('aria-hidden');
+            return;
+        }
+        var iconOnly = btn.classList.contains('btn-icon') || btn.classList.contains('btn-icon-danger')
+            || ((btn.textContent || '').replace(/\s+/g, '') === '');
+        if (iconOnly) {
+            btn.innerHTML = LOADING_SPINNER.replace('h-5 w-5', 'h-4 w-4');
+            return;
+        }
+        var label = form.getAttribute('data-loading-label') || loadingLabelFor(btn);
+        btn.innerHTML = LOADING_SPINNER + '<span>' + label + '</span>';
+    }
+
+    function bindLoadingSubmit(form) {
+        form.addEventListener('submit', function (event) {
+            if (event.defaultPrevented) return;
+            if (form.getAttribute('data-submitting') === '1') {
+                event.preventDefault();
+                return;
+            }
+            var buttons = form.querySelectorAll('button[type="submit"], input[type="submit"]');
+            var clicked = event.submitter || form.querySelector('[type="submit"]');
+            if (clicked && (clicked.getAttribute('formtarget') || form.getAttribute('target'))) {
+                return;
+            }
+            if (clicked && clicked.disabled) {
+                event.preventDefault();
+                return;
+            }
+            form.setAttribute('data-submitting', '1');
+            buttons.forEach(function (btn) { applySubmitLoading(btn, form); });
+        });
+    }
+
+    document.querySelectorAll('form').forEach(function (form) {
+        if (form.hasAttribute('data-no-loading')) return;
+        if (form.querySelector('[data-autosubmit], [data-autofilter]')) return;
+        var method = (form.getAttribute('method') || 'get').toLowerCase();
+        var explicit = form.hasAttribute('data-loading-submit');
+        if (!explicit && method !== 'post') return;
+        bindLoadingSubmit(form);
+    });
+
+    /* Exports longs (liens GET) : feedback visuel le temps de la génération. */
+    document.querySelectorAll('a[data-loading-export], a[href*="/export"], a[href*="/pdf"]').forEach(function (link) {
+        link.addEventListener('click', function () {
+            if (link.getAttribute('aria-busy') === 'true') return;
+            link.setAttribute('aria-busy', 'true');
+            link.classList.add('pointer-events-none', 'opacity-70');
+            var label = loadingLabelFor(link);
+            link.innerHTML = LOADING_SPINNER + '<span>' + label + '</span>';
+        });
+    });
 
     /* ---- Afficher / masquer le mot de passe (bouton oeil) ---- */
     document.querySelectorAll('[data-toggle-password]').forEach(function (btn) {

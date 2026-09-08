@@ -40,6 +40,7 @@ $statusUrl = '/admin/emplois/candidatures/' . (int) $application['id'] . '/statu
     <div class="flex flex-wrap items-center gap-2">
         <?php if ($application['statut'] !== 'retenue'): ?>
             <form method="post" action="<?= e($statusUrl) ?>"
+                  data-loading-submit data-loading-label="Validation…"
                   data-confirm="Retenir <?= e($application['full_name']) ?> pour la prochaine phase du recrutement ?">
                 <?= csrf_field() ?>
                 <input type="hidden" name="statut" value="retenue">
@@ -50,6 +51,7 @@ $statusUrl = '/admin/emplois/candidatures/' . (int) $application['id'] . '/statu
         <?php endif; ?>
         <?php if ($application['statut'] !== 'refusee'): ?>
             <form method="post" action="<?= e($statusUrl) ?>"
+                  data-loading-submit data-loading-label="Enregistrement…"
                   data-confirm="Ne pas retenir la candidature de <?= e($application['full_name']) ?> ?">
                 <?= csrf_field() ?>
                 <input type="hidden" name="statut" value="refusee">
@@ -136,7 +138,7 @@ $statusUrl = '/admin/emplois/candidatures/' . (int) $application['id'] . '/statu
                 <span class="card-title-icon"><?= icon('arrow-path', 'h-5 w-5') ?></span>
                 Statut de la candidature
             </h2>
-            <form method="post" action="<?= e($statusUrl) ?>" class="flex flex-col gap-3 sm:flex-row">
+            <form method="post" action="<?= e($statusUrl) ?>" class="flex flex-col gap-3 sm:flex-row" data-loading-submit data-loading-label="Enregistrement…">
                 <?= csrf_field() ?>
                 <select class="input flex-1" name="statut" aria-label="Nouveau statut">
                     <?php foreach (JobApplication::STATUT_LABELS as $key => $label): ?>

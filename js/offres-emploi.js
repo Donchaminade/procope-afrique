@@ -277,7 +277,8 @@
 
             var formData = new FormData(els.form);
             els.submit.disabled = true;
-            els.submit.innerHTML = '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Envoi en cours…';
+            els.submit.setAttribute('aria-busy', 'true');
+            els.submit.innerHTML = '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Envoi…';
 
             fetch(API_BASE + '/api/offres/' + encodeURIComponent(currentSlug) + '/postuler', { method: 'POST', body: formData })
                 .then(function (response) {
@@ -306,6 +307,7 @@
                 })
                 .finally(function () {
                     els.submit.disabled = false;
+                    els.submit.removeAttribute('aria-busy');
                     els.submit.innerHTML = '<i class="fa fa-paper-plane me-2" aria-hidden="true"></i>Envoyer ma candidature';
                 });
         }

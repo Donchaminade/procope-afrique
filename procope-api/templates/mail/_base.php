@@ -2,13 +2,13 @@
 /**
  * Enveloppe HTML commune des mails PROCOPE. Variables : $body_html
  * (le corps), éventuellement $subject_line.
- * CSS 100 % inline (compatibilité clients mail). Le logo est servi depuis
- * l'API (URL absolue construite depuis APP_URL) avec repli texte si les
- * images sont bloquées.
+ * CSS 100 % inline (compatibilité clients mail).
+ * Le src du logo est l'URL publique (APP_URL) pour la prévisualisation
+ * admin (navigateur). À l'envoi SMTP, Mailer::htmlForDelivery() le
+ * remplace par cid:logo-procope et embarque public/assets/logo.png.
  */
-$appUrl = rtrim((string) \App\Core\Env::get('APP_URL', ''), '/');
-$logoUrl = $appUrl . '/assets/logo.png';
-$siteUrl = rtrim((string) \App\Core\Env::get('SITE_URL', 'https://procopeafrique.vercel.app'), '/');
+$logoUrl = \App\Services\Mailer::logoPublicUrl();
+$siteUrl = rtrim((string) \App\Core\Env::get('SITE_URL', 'https://procopeafrique.org'), '/');
 ?>
 <!doctype html>
 <html lang="fr">
@@ -61,7 +61,7 @@ $siteUrl = rtrim((string) \App\Core\Env::get('SITE_URL', 'https://procopeafrique
                         <a href="<?= e($siteUrl) ?>" style="color:#f5a623;font-weight:bold;text-decoration:none;"><?= e(preg_replace('#^https?://#', '', $siteUrl)) ?></a>
                     </p>
                     <p style="margin:0;font-size:11px;color:#93a1b0;">
-                        Cet e-mail a été envoyé automatiquement, merci de ne pas y répondre directement.
+                        Pour nous écrire, répondez à cet e-mail — la réponse arrive sur procopeafrique@gmail.com.
                     </p>
                 </td>
             </tr>

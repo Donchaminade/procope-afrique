@@ -7,8 +7,11 @@ use App\Core\Response;
 use App\Core\View;
 use App\Models\Formation;
 use App\Models\Inscription;
+use App\Models\IncubationCall;
+use App\Models\IncubatedProject;
 use App\Models\JobApplication;
 use App\Models\JobOffer;
+use App\Models\ProjectApplication;
 use App\Services\Audit;
 use App\Services\Exporter;
 use App\Services\Pdf;
@@ -22,7 +25,9 @@ final class ArchivesController
         View::render('archives/index', [
             'title'          => 'Archives',
             'result'         => Formation::archivedPaginate($page),
-            'archivedOffers' => JobOffer::archived(),
+            'archivedOffers'   => JobOffer::archived(),
+            'archivedProjects' => IncubatedProject::archived(),
+            'archivedCalls'    => IncubationCall::archived(),
         ]);
     }
 
@@ -111,5 +116,72 @@ final class ArchivesController
         Audit::log('job_offer.unarchive', 'job_offer', $id, ['title' => $offer['title']]);
         flash('success', 'Offre restaurée. Elle réapparaît dans la liste des offres (non publiée).');
         Response::redirect('/admin/emplois');
+    }
+
+    private function archivedProjectOr404(Request $request): array
+    {
+        $project = IncubatedProject::find((int) $request->params['id']);
+        if (!$project || empty($project['archived_at'])) {
+            Response::abort(404, 'Projet archivé introuvable');
+        }
+        return $project;
+    }
+
+    public function showProject(Request $request): void
+    {
+        $project = $this->archivedProjectOr404($request);
+        View::render('archives/projet-show', [
+            'title'        => 'Archive — ' . $project['title'],
+            'project'      => $project,
+            'applications' => ProjectApplication::allForProject((int) $project['id']),
+        ]);
+    }
+
+    public function exportProject(Request $request): void
+    {
+        $project = $this->archivedProjectOr404($request);
+        $statut = (string) ($request->input('statut', '') ?? '');
+        $statut = in_array($statut, ProjectApplication::STATUTS, true) ? $statut : null;
+        Audit::log('project_applications.export', 'incubated_project', (int) $project['id'], [
+            'title' => $project['title'], 'statut' => $statut ?? 'tous', 'source' => 'archive',
+        ]);
+        Exporter::downloadProjectApplications(['project_id' => (int) $project['id'], 'statut' => $statut]);
+    }
+
+    public function exportProjectPdf(Request $request): void
+    {
+        $project = $this->archivedProjectOr404($request);
+        $statut = (string) ($request->input('statut', '') ?? '');
+        $statut = in_array($statut, ProjectApplication::STATUTS, true) ? $statut : null;
+        Audit::log('project_applications.export_pdf', 'incubated_project', (int) $project['id'], [
+            'title' => $project['title'], 'statut' => $statut ?? 'tous', 'source' => 'archive',
+        ]);
+        $rows = ProjectApplication::allFiltered(['project_id' => (int) $project['id'], 'statut' => $statut]);
+        $title = ($statut === 'retenue' ? 'Dépôts retenus' : 'Dépôts') . ' — ' . $project['title'];
+        Pdf::downloadProjectApplications($rows, $title);
+    }
+
+    public function restoreProject(Request $request): void
+    {
+        $project = $this->archivedProjectOr404($request);
+        $id = (int) $project['id'];
+        IncubatedProject::unarchive($id);
+        Audit::log('project.unarchive', 'incubated_project', $id, ['title' => $project['title']]);
+        flash('success', 'Projet restauré. Il réapparaît dans la liste des projets (non publié).');
+        Response::redirect('/admin/projets');
+    }
+
+    public function restoreCall(Request $request): void
+    {
+        $call = IncubationCall::find((int) $request->params['id']);
+        if (!$call || empty($call['archived_at'])) {
+            Response::abort(404, 'Appel archivé introuvable');
+        }
+        IncubationCall::unarchive((int) $call['id']);
+        Audit::log('incubation_call.unarchive', 'incubation_call', (int) $call['id'], [
+            'title' => $call['title'],
+        ]);
+        flash('success', 'Appel restauré. Il réapparaît dans la liste (non publié).');
+        Response::redirect('/admin/appels');
     }
 }

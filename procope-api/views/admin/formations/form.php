@@ -27,7 +27,7 @@ $toLocal = static function (?string $datetime): string {
 </div>
 
 <form method="post" action="<?= $isEdit ? '/admin/formations/' . (int) $formation['id'] : '/admin/formations' ?>"
-      class="max-w-4xl space-y-6" enctype="multipart/form-data">
+      class="max-w-4xl space-y-6" enctype="multipart/form-data" data-loading-submit data-loading-label="Enregistrement…">
     <?= csrf_field() ?>
 
     <div class="card">
@@ -215,6 +215,7 @@ $toLocal = static function (?string $datetime): string {
                 L'envoi manuel ignore les interrupteurs d'automatisation.
             </p>
             <form method="post" action="/admin/formations/<?= (int) $formation['id'] ?>/announce"
+                  data-loading-submit data-loading-label="Envoi…"
                   data-confirm="Envoyer l'annonce de cette formation à <?= $pastParticipants ?> destinataire<?= $pastParticipants > 1 ? 's' : '' ?> (anciens participants + candidats aux offres) ?">
                 <?= csrf_field() ?>
                 <button class="btn-secondary" type="submit" <?= $pastParticipants === 0 ? 'disabled' : '' ?>>
@@ -236,6 +237,7 @@ $toLocal = static function (?string $datetime): string {
                 La suppression est définitive et retire aussi les créneaux associés.
             </p>
             <form method="post" action="/admin/formations/<?= (int) $formation['id'] ?>/delete"
+                  data-loading-submit data-loading-label="Suppression…"
                   data-confirm="Supprimer définitivement cette formation ?">
                 <?= csrf_field() ?>
                 <button class="btn-danger" type="submit">

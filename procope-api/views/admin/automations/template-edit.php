@@ -8,6 +8,7 @@ $ctaLabels = [
     'offre'           => "Voir l'offre et postuler",
     'offre_rappel'    => 'Postuler maintenant',
     'offre_prolongee' => "Voir l'offre et postuler",
+    'projet_publie'   => 'Voir le projet',
 ];
 $autoCta = $ctaLabels[$name] ?? null;
 
@@ -32,7 +33,7 @@ $editorHtml = $bodyIsPlain ? nl2br(e($body)) : $body;
     </a>
 </div>
 
-<form method="post" action="/admin/automations/templates/<?= e($name) ?>" id="tpl-form" class="max-w-3xl space-y-6">
+<form method="post" action="/admin/automations/templates/<?= e($name) ?>" id="tpl-form" class="max-w-3xl space-y-6" data-loading-submit data-loading-label="Enregistrement…">
     <?= csrf_field() ?>
 
     <div class="card">
@@ -111,7 +112,7 @@ $editorHtml = $bodyIsPlain ? nl2br(e($body)) : $body;
                     </span>
                     <p class="text-[13px] font-bold text-brand-navy">PROCOPE Afrique</p>
                     <p class="mt-0.5 text-xs text-slate-500">Lomé, Togo · procopeafrique@gmail.com · +228 96 45 76 95</p>
-                    <p class="mt-0.5 text-xs font-bold text-brand-orange">procopeafrique.vercel.app</p>
+                    <p class="mt-0.5 text-xs font-bold text-brand-orange"><?= e(parse_url((string) \App\Core\Env::get('SITE_URL', 'https://procopeafrique.org'), PHP_URL_HOST) ?: 'procopeafrique.org') ?></p>
                     <p class="mt-1.5 text-[11px] text-slate-400">Cet e-mail a été envoyé automatiquement, merci de ne pas y répondre directement.</p>
                 </div>
             </div>
