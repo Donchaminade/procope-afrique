@@ -43,6 +43,8 @@
             name: "@mathieukunyabor",
             role: "Entrepreneuriat étudiant",
             thumb: "img/vt-thumb-1.jpg",
+            w: 420,
+            h: 233,
             url: "https://www.tiktok.com/@mathieukunyabor/video/7646324253251374343"
         },
         {
@@ -108,7 +110,7 @@
             return (
                 '<div class="vt-card" data-url="' + esc(v.url) + '" data-thumb="' + esc(v.thumb) + '" role="button" tabindex="0" ' +
                 'aria-label="Lire le témoignage vidéo ' + (i + 1) + " — " + esc(label) + '">' +
-                '<img src="' + esc(v.thumb) + '" alt="Aperçu vidéo TikTok — ' + esc(label) + '" loading="lazy">' +
+                '<img src="' + esc(v.thumb) + '" alt="Aperçu vidéo TikTok — ' + esc(label) + '" loading="lazy" decoding="async" width="' + (v.w || 420) + '" height="' + (v.h || 747) + '">' +
                 '<span class="vt-tiktok-badge">' + TIKTOK_SVG + "</span>" +
                 '<div class="vt-overlay"><span class="vt-play"><i class="fa fa-play"></i></span></div>' +
                 meta +

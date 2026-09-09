@@ -20,7 +20,7 @@
         var imageHtml = project.image
             ? '<div class="ratio ratio-16x9">' +
               '<img src="' + esc(project.image) + '" alt="Affiche — ' + esc(project.title) + '"' +
-              ' class="w-100 h-100" style="object-fit:cover;" loading="lazy"></div>'
+              ' class="w-100 h-100" style="object-fit:cover;" loading="lazy" decoding="async" width="800" height="450"></div>'
             : '';
 
         return '<div class="' + (options.colClass || 'col-lg-4 col-md-6') + '">' +
@@ -325,6 +325,8 @@
                     img.src = url;
                     img.alt = '';
                     img.loading = 'lazy';
+                    img.width = 84;
+                    img.height = 63;
                     img.style.width = '100%';
                     img.style.height = '100%';
                     img.style.objectFit = 'cover';
