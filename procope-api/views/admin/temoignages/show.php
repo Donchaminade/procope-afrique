@@ -51,7 +51,7 @@ $photoUrl = Testimonial::photoUrl($testimonial['photo_path'] ?? null);
 </div>
 
 <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
-    <div class="card xl:col-span-2">
+    <div class="card min-w-0 overflow-hidden xl:col-span-2">
         <h2 class="card-title">
             <span class="card-title-icon"><?= icon('chat-bubble', 'h-5 w-5') ?></span>
             Témoignage
@@ -60,7 +60,7 @@ $photoUrl = Testimonial::photoUrl($testimonial['photo_path'] ?? null);
             <img src="<?= e($photoUrl) ?>" alt="Photo de <?= e($testimonial['author_name']) ?>"
                  class="mb-5 max-h-64 rounded-xl object-cover ring-1 ring-slate-200">
         <?php endif; ?>
-        <div class="whitespace-pre-line rounded-xl bg-slate-50 p-5 text-sm leading-relaxed text-slate-700 ring-1 ring-inset ring-slate-200">
+        <div class="max-w-full min-w-0 overflow-hidden whitespace-pre-line break-words [overflow-wrap:anywhere] [word-break:break-word] rounded-xl bg-slate-50 p-5 text-sm leading-relaxed text-slate-700 ring-1 ring-inset ring-slate-200">
             <?= e($testimonial['quote']) ?>
         </div>
     </div>

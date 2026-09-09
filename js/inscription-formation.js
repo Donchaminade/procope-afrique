@@ -69,6 +69,9 @@
             img.src = f.affiche_url;
             img.alt = f.titre;
             img.loading = 'lazy';
+            img.decoding = 'async';
+            img.width = 800;
+            img.height = 1066;
             img.className = 'img-fluid rounded shadow w-100';
             afficheWrap.innerHTML = '';
             afficheWrap.appendChild(img);

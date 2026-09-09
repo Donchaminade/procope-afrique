@@ -350,7 +350,7 @@
                     '<button type="button" class="fg-slide' + (config.kind === 'affiche' ? ' fg-slide--poster' : '') + '"' +
                         ' data-fg-photo="' + index + '"' +
                         ' aria-label="' + esc(label || 'Agrandir') + '">' +
-                        '<img src="' + esc(item.url) + '" alt="' + esc(label) + '" loading="lazy">' +
+                        '<img src="' + esc(item.url) + '" alt="' + esc(label) + '" loading="lazy" decoding="async" width="800" height="600">' +
                         '<span class="fg-slide-overlay" aria-hidden="true">' +
                             '<span class="fg-slide-zoom"><i class="fa fa-search-plus" aria-hidden="true"></i></span>' +
                             caption +
@@ -382,7 +382,7 @@
                             '<div class="col-6 col-md-4 col-lg-3">' +
                                 '<button type="button" class="fg-photo" data-fg-photo="' + index + '"' +
                                     ' aria-label="' + esc(photoLabel(item) || 'Agrandir') + '">' +
-                                    '<img src="' + esc(item.url) + '" alt="' + esc(photoLabel(item) || config.itemLabel) + '" loading="lazy">' +
+                                    '<img src="' + esc(item.url) + '" alt="' + esc(photoLabel(item) || config.itemLabel) + '" loading="lazy" decoding="async" width="800" height="600">' +
                                     '<span class="fg-photo-zoom"><i class="fa fa-search-plus" aria-hidden="true"></i></span>' +
                                 '</button>' +
                             '</div>'
