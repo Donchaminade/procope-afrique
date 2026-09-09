@@ -47,7 +47,7 @@
         var imageHtml = offer.image
             ? '<div class="ratio ratio-16x9">' +
               '<img src="' + esc(offer.image) + '" alt="Affiche — ' + esc(offer.title) + '"' +
-              ' class="w-100 h-100" style="object-fit:cover;" loading="lazy"></div>'
+              ' class="w-100 h-100" style="object-fit:cover;" loading="lazy" decoding="async" width="800" height="450"></div>'
             : '';
 
         return '<div class="' + options.colClass + '">' +
@@ -174,6 +174,8 @@
                     img.src = url;
                     img.alt = '';
                     img.loading = 'lazy';
+                    img.width = 84;
+                    img.height = 63;
                     img.style.width = '100%';
                     img.style.height = '100%';
                     img.style.objectFit = 'cover';

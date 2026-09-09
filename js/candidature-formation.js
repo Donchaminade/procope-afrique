@@ -50,7 +50,7 @@
         }).join('');
 
         var affiche = f.affiche_url
-            ? '<img src="' + esc(f.affiche_url) + '" alt="' + esc(f.titre) + '" loading="lazy" class="img-fluid rounded shadow w-100 mb-4">'
+            ? '<img src="' + esc(f.affiche_url) + '" alt="' + esc(f.titre) + '" loading="lazy" decoding="async" width="800" height="1066" class="img-fluid rounded shadow w-100 mb-4">'
             : '';
 
         container.innerHTML =

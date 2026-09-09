@@ -55,9 +55,11 @@
 
     <!-- Customized Bootstrap Stylesheet -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preload" as="image" type="image/webp" href="img/photo-header.webp">
+
 
     <!-- Template Stylesheet -->
-    <link href="css/style.css?v=20260824-gal2" rel="stylesheet">
+    <link href="css/style.css?v=20260909-psi1" rel="stylesheet">
 
     <script type="application/ld+json">
 {
@@ -97,7 +99,7 @@
 }
     </script>
     <!-- Domain-agnostic SEO: rewrites canonical/OG/Twitter from the live domain -->
-    <script src="js/seo.js"></script>
+    <script src="js/seo.js" defer></script>
 </head>
 
 <body>
@@ -120,11 +122,11 @@
             </div>
             <div class="col-lg-4 text-center text-lg-end">
                 <div class="d-inline-flex align-items-center" style="height: 45px;">
-                    <a class="btn btn-sm btn-outline-light btn-sm-square rounded-circle me-2" href=""><i class="fab fa-twitter fw-normal"></i></a>
-                    <a class="btn btn-sm btn-outline-light btn-sm-square rounded-circle me-2" href=""><i class="fab fa-facebook-f fw-normal"></i></a>
-                    <a class="btn btn-sm btn-outline-light btn-sm-square rounded-circle me-2" href=""><i class="fab fa-linkedin-in fw-normal"></i></a>
-                    <a class="btn btn-sm btn-outline-light btn-sm-square rounded-circle me-2" href=""><i class="fab fa-instagram fw-normal"></i></a>
-                    <a class="btn btn-sm btn-outline-light btn-sm-square rounded-circle" href=""><i class="fab fa-youtube fw-normal"></i></a>
+                    <a class="btn btn-sm btn-outline-light btn-sm-square rounded-circle me-2" href="" aria-label="Twitter"><i class="fab fa-twitter fw-normal" aria-hidden="true"></i></a>
+                    <a class="btn btn-sm btn-outline-light btn-sm-square rounded-circle me-2" href="" aria-label="Facebook"><i class="fab fa-facebook-f fw-normal" aria-hidden="true"></i></a>
+                    <a class="btn btn-sm btn-outline-light btn-sm-square rounded-circle me-2" href="" aria-label="LinkedIn"><i class="fab fa-linkedin-in fw-normal" aria-hidden="true"></i></a>
+                    <a class="btn btn-sm btn-outline-light btn-sm-square rounded-circle me-2" href="" aria-label="Instagram"><i class="fab fa-instagram fw-normal" aria-hidden="true"></i></a>
+                    <a class="btn btn-sm btn-outline-light btn-sm-square rounded-circle" href="" aria-label="YouTube"><i class="fab fa-youtube fw-normal" aria-hidden="true"></i></a>
                 </div>
             </div>
         </div>
@@ -136,12 +138,12 @@
     <div class="container-fluid position-relative p-0">
         <nav class="navbar navbar-expand-xl navbar-dark px-3 px-md-4 px-xl-5 py-3 py-lg-0">
             <a href="index.html" class="navbar-brand p-0">
-                <img src="img/logo.png" alt="PROCOPE">
+                <img src="img/logo.png" alt="PROCOPE" width="384" height="384" decoding="async">
             </a>
             <div class="navbar-actions d-flex align-items-center">
-                <button type="button" id="theme-toggle" class="btn theme-toggle" aria-label="Basculer entre le mode clair et sombre" title="Mode clair / sombre"><i class="bi bi-moon-stars-fill icon-to-dark"></i><i class="bi bi-sun-fill icon-to-light"></i></button>
+                <button type="button" id="theme-toggle" class="btn theme-toggle" aria-label="Basculer entre le mode clair et sombre" title="Mode clair / sombre"><i class="bi bi-moon-stars-fill icon-to-dark" aria-hidden="true"></i><i class="bi bi-sun-fill icon-to-light" aria-hidden="true"></i></button>
                 <button class="navbar-toggler ms-1" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Menu">
-                    <span class="fa fa-bars"></span>
+                    <span class="fa fa-bars" aria-hidden="true"></span>
                 </button>
             </div>
             <div class="collapse navbar-collapse" id="navbarCollapse">
@@ -154,7 +156,7 @@
                     <a href="candidature.html" class="nav-item nav-link">Espace candidature</a>
                     <a href="contact.html" class="nav-item nav-link">Contact</a>
                     <div class="nav-item dropdown">
-                        <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Plus</a>
+                        <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false">Plus</a>
                         <div class="dropdown-menu m-0">
                             <a href="partenaires.html" class="dropdown-item">Investisseurs & Partenaires</a>
                             <a href="offres-emploi.html" class="dropdown-item">Offres d'emploi</a>
@@ -267,7 +269,10 @@
             <div class="row g-4">
                 <div class="col-lg-4 col-md-6 wow zoomIn" data-wow-delay="0.15s">
                     <article class="news-card bg-light rounded h-100 overflow-hidden">
-                        <img class="img-fluid w-100" src="img/photo-actualites-1.jpg" loading="lazy" alt="Formateur PROCOPE souriant devant le kakémono de l'incubateur">
+                        <picture>
+                            <source srcset="img/photo-actualites-1.webp" type="image/webp">
+                            <img class="img-fluid w-100" src="img/photo-actualites-1.jpg" loading="lazy" alt="Formateur PROCOPE souriant devant le kakémono de l'incubateur" width="1011" height="1400" decoding="async">
+                        </picture>
                         <div class="p-4">
                             <h4 class="mb-2">Animation de session</h4>
                             <p class="mb-0">Présentation et échanges autour de la création d'entreprise.</p>
@@ -276,7 +281,10 @@
                 </div>
                 <div class="col-lg-4 col-md-6 wow zoomIn" data-wow-delay="0.3s">
                     <article class="news-card bg-light rounded h-100 overflow-hidden">
-                        <img class="img-fluid w-100" src="img/photo-actualites-2.jpg" loading="lazy" alt="Participants PROCOPE autour d'un projet de transformation locale">
+                        <picture>
+                            <source srcset="img/photo-actualites-2.webp" type="image/webp">
+                            <img class="img-fluid w-100" src="img/photo-actualites-2.jpg" loading="lazy" alt="Participants PROCOPE autour d'un projet de transformation locale" width="1200" height="960" decoding="async">
+                        </picture>
                         <div class="p-4">
                             <h4 class="mb-2">Projets présentés</h4>
                             <p class="mb-0">Les porteurs partagent leurs produits et leur parcours.</p>
@@ -285,7 +293,10 @@
                 </div>
                 <div class="col-lg-4 col-md-6 wow zoomIn" data-wow-delay="0.45s">
                     <article class="news-card bg-light rounded h-100 overflow-hidden">
-                        <img class="img-fluid w-100" src="img/photo-actualites-3.jpg" loading="lazy" alt="Staff et participant PROCOPE devant le kakémono de l'incubateur">
+                        <picture>
+                            <source srcset="img/photo-actualites-3.webp" type="image/webp">
+                            <img class="img-fluid w-100" src="img/photo-actualites-3.jpg" loading="lazy" alt="Staff et participant PROCOPE devant le kakémono de l'incubateur" width="1200" height="867" decoding="async">
+                        </picture>
                         <div class="p-4">
                             <h4 class="mb-2">Après la session</h4>
                             <p class="mb-0">Un réseau qui se construit entre formateurs et entrepreneurs.</p>
@@ -348,7 +359,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
                 </div>
                 <div class="modal-body text-center">
-                    <img id="poster-modal-img" class="poster-modal-img" src="" alt="Affiche de formation PROCOPE Afrique">
+                    <img id="poster-modal-img" class="poster-modal-img" src="" width="800" height="1066" alt="Affiche de formation PROCOPE Afrique">
                 </div>
             </div>
         </div>
@@ -366,7 +377,7 @@
                         <button type="button" class="fg-lightbox-nav fg-lightbox-prev" id="gallery-modal-prev" aria-label="Photo précédente">
                             <i class="fa fa-chevron-left" aria-hidden="true"></i>
                         </button>
-                        <img id="gallery-modal-img" class="fg-lightbox-img" src="" alt="Photo de formation PROCOPE Afrique">
+                        <img id="gallery-modal-img" class="fg-lightbox-img" src="" width="1200" height="900" alt="Photo de formation PROCOPE Afrique">
                         <button type="button" class="fg-lightbox-nav fg-lightbox-next" id="gallery-modal-next" aria-label="Photo suivante">
                             <i class="fa fa-chevron-right" aria-hidden="true"></i>
                         </button>
@@ -389,7 +400,7 @@
                 <div class="col-lg-4 col-md-6 footer-about">
                     <div class="d-flex flex-column align-items-center justify-content-center text-center h-100 bg-primary p-4">
                         <a href="index.html" class="navbar-brand">
-                            <img src="img/logo.png" alt="PROCOPE" style="max-height: 60px;">
+                            <img src="img/logo.png" alt="PROCOPE" style="max-height: 60px;" width="384" height="384" decoding="async">
                         </a>
                         <p class="mt-3 mb-4">Accompagner et autonomiser les jeunes entrepreneurs africains en leur fournissant des outils, des formations, du mentorat et des financements pour transformer leurs idées en projets viables et durables.</p>
                         <a href="contact.html" class="btn btn-dark py-3 px-5">Nous contacter</a>
@@ -414,10 +425,10 @@
                                 <p class="mb-0">+228 96 45 76 95</p>
                             </div>
                             <div class="d-flex mt-4">
-                                <a class="btn btn-primary btn-square me-2" href="#"><i class="fab fa-twitter fw-normal"></i></a>
-                                <a class="btn btn-primary btn-square me-2" href="#"><i class="fab fa-facebook-f fw-normal"></i></a>
-                                <a class="btn btn-primary btn-square me-2" href="#"><i class="fab fa-linkedin-in fw-normal"></i></a>
-                                <a class="btn btn-primary btn-square" href="#"><i class="fab fa-instagram fw-normal"></i></a>
+                                <a class="btn btn-primary btn-square me-2" href="#" aria-label="Twitter"><i class="fab fa-twitter fw-normal" aria-hidden="true"></i></a>
+                                <a class="btn btn-primary btn-square me-2" href="#" aria-label="Facebook"><i class="fab fa-facebook-f fw-normal" aria-hidden="true"></i></a>
+                                <a class="btn btn-primary btn-square me-2" href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in fw-normal" aria-hidden="true"></i></a>
+                                <a class="btn btn-primary btn-square" href="#" aria-label="Instagram"><i class="fab fa-instagram fw-normal" aria-hidden="true"></i></a>
                             </div>
                         </div>
                         <div class="col-lg-6 col-md-12 pt-0 pt-lg-5 mb-5">
@@ -499,24 +510,24 @@
     </div>
 
     <!-- Back to Top -->
-    <a href="#" class="btn btn-lg btn-primary btn-lg-square rounded back-to-top"><i class="bi bi-arrow-up"></i></a>
+    <a href="#" class="btn btn-lg btn-primary btn-lg-square rounded back-to-top" aria-label="Retour en haut de page"><i class="bi bi-arrow-up" aria-hidden="true"></i></a>
 
 
     <!-- JavaScript Libraries -->
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="lib/wow/wow.min.js"></script>
-    <script src="lib/easing/easing.min.js"></script>
-    <script src="lib/waypoints/waypoints.min.js"></script>
-    <script src="lib/counterup/counterup.min.js"></script>
-    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
+    <script defer src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script defer src="lib/wow/wow.min.js"></script>
+    <script defer src="lib/easing/easing.min.js"></script>
+    <script defer src="lib/waypoints/waypoints.min.js"></script>
+    <script defer src="lib/counterup/counterup.min.js"></script>
+    <script defer src="lib/owlcarousel/owl.carousel.min.js"></script>
 
     <!-- Template Javascript -->
-    <script src="js/main.js"></script>
-    <script src="js/api-config.js"></script>
-    <script src="js/galeries.js?v=20260824-gal2"></script>
-    <script src="js/temoignages.js?v=20260908-tm3"></script>
-    <script src="js/procope.js"></script>
+    <script defer src="js/main.js"></script>
+    <script defer src="js/api-config.js"></script>
+    <script defer src="js/galeries.js?v=20260824-gal2"></script>
+    <script defer src="js/temoignages.js?v=20260908-tm3"></script>
+    <script defer src="js/procope.js"></script>
 </body>
 
 </html>

@@ -148,6 +148,15 @@ h6,
     transition: .5s;
 }
 
+.navbar-dark .navbar-nav .nav-link:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 4px;
+}
+
+.sticky-top.navbar-dark .navbar-nav .nav-link:focus-visible {
+    outline-color: var(--primary);
+}
+
 .sticky-top.navbar-dark .navbar-nav .nav-link {
     padding: 20px 0;
     color: var(--dark);
@@ -305,6 +314,17 @@ h6,
 
 
 /*** Carousel ***/
+#header-carousel .carousel-item > picture {
+    display: block;
+    width: 100%;
+}
+
+#header-carousel .carousel-item > picture img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
 .carousel-caption {
     top: 0;
     left: 0;
@@ -344,7 +364,16 @@ h6,
         min-height: max(32rem, calc(100svh - 5.5rem));
     }
 
-    #header-carousel .carousel-item > img {
+    #header-carousel .carousel-item > picture {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+    }
+
+    #header-carousel .carousel-item > img,
+    #header-carousel .carousel-item > picture img {
         position: absolute;
         inset: 0;
         width: 100%;
@@ -524,6 +553,12 @@ h6,
     overflow: hidden;
 }
 
+.service-card-img picture {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
 .service-card-img img {
     width: 100%;
     height: 100%;
@@ -602,6 +637,12 @@ html[data-theme="dark"] .service-card-img::after {
     height: 180px;
     overflow: hidden;
     background: #EEF9FF;
+}
+
+.objectif-card-img picture {
+    display: block;
+    width: 100%;
+    height: 100%;
 }
 
 .objectif-card-img img {
@@ -848,6 +889,11 @@ html[data-theme="dark"] .tm-empty {
     object-position: center;
 }
 
+picture:has(> img.photo-banner) {
+    display: block;
+    width: 100%;
+}
+
 .team-item:hover .team-img img,
 .blog-item:hover .blog-img img {
     transform: scale(1.15);
@@ -872,7 +918,13 @@ html[data-theme="dark"] .tm-empty {
 }
 
 .bg-header {
-    background: linear-gradient(rgba(9, 30, 62, .7), rgba(9, 30, 62, .7)), url(../img/photo-header.jpg) center center no-repeat;
+    background-color: #091e3e;
+    background-image: linear-gradient(rgba(9, 30, 62, .7), rgba(9, 30, 62, .7)), url(../img/photo-header.jpg);
+    background-image: linear-gradient(rgba(9, 30, 62, .7), rgba(9, 30, 62, .7)),
+        image-set(url("../img/photo-header.webp") type("image/webp"),
+            url("../img/photo-header.jpg") type("image/jpeg"));
+    background-position: center center;
+    background-repeat: no-repeat;
     background-size: cover;
 }
 
@@ -920,6 +972,12 @@ body,
 
 .theme-toggle:focus {
     outline: none;
+    box-shadow: none;
+}
+
+.theme-toggle:focus-visible {
+    outline: 3px solid var(--primary);
+    outline-offset: 3px;
     box-shadow: none;
 }
 
@@ -972,7 +1030,7 @@ html[data-theme="dark"] .text-dark {
 }
 
 html[data-theme="dark"] .text-muted {
-    color: #9fb0c7 !important;
+    color: #c5d0dc !important;
 }
 
 /* Borders */
@@ -993,7 +1051,7 @@ html[data-theme="dark"] .form-select {
 }
 
 html[data-theme="dark"] .form-control::placeholder {
-    color: #8ea3bf;
+    color: #b8c6d8;
 }
 
 html[data-theme="dark"] .form-select option {
@@ -1744,7 +1802,7 @@ html[data-theme="dark"] .flags-marquee .flag-item {
     display: block;
     margin-top: 2px;
     text-align: center;
-    color: #6c757d;
+    color: #4b5563;
     font-size: 13px;
 }
 
@@ -1833,7 +1891,7 @@ html[data-theme="dark"] .flags-marquee .flag-item {
 }
 
 .fg-lightbox-caption {
-    color: #6c757d;
+    color: #4b5563;
 }
 
 @media (max-width: 575.98px) {
@@ -1897,7 +1955,7 @@ html[data-theme="dark"] .fg-slide-title {
 }
 
 html[data-theme="dark"] .fg-slide-kicker {
-    color: #9aa8b8;
+    color: #c5d0dc;
 }
 
 html[data-theme="dark"] .fg-lightbox .modal-content {
@@ -1905,7 +1963,7 @@ html[data-theme="dark"] .fg-lightbox .modal-content {
 }
 
 html[data-theme="dark"] .fg-lightbox-caption {
-    color: #9aa8b8;
+    color: #c5d0dc;
 }
 
 html[data-theme="dark"] #galleryModal .modal-header .btn-close {
@@ -2104,7 +2162,8 @@ video {
 .fg-photo img,
 .fg-slide img,
 .news-card img,
-.carousel-item > img {
+.carousel-item > img,
+.carousel-item > picture img {
     max-width: none;
 }
 
@@ -2118,6 +2177,12 @@ table {
 
 .pc-split-media {
     min-height: 500px;
+}
+
+.pc-split-media .position-relative > picture {
+    position: absolute;
+    inset: 0;
+    display: block;
 }
 
 .pc-split-media--sm {
@@ -2635,4 +2700,39 @@ html[data-theme="dark"] #header-carousel .hero-formation-notice.hfn-tone-5 {
 html[data-theme="dark"] .hero-formation-notice:hover,
 html[data-theme="dark"] .hero-formation-notice:focus-visible {
     box-shadow: 0 16px 34px rgba(var(--hfn-shadow), .5), 0 4px 14px rgba(0, 0, 0, .55);
+}
+
+/*** Formulaires PROCOPE (hauteur unifiée, plus de style inline) ***/
+.form-control-procope {
+    height: 55px;
+}
+
+/*** Accessibilité / PageSpeed (contrastes, focus, CLS) ***/
+.text-muted {
+    color: #4b5563 !important;
+}
+
+a:focus-visible,
+button:focus-visible,
+.btn:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible,
+.navbar-toggler:focus-visible {
+    outline: 3px solid var(--primary);
+    outline-offset: 2px;
+}
+
+.btn-outline-light:focus-visible {
+    outline-color: #ffffff;
+}
+
+.news-card picture,
+.team-img picture {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.news-card img {
+    aspect-ratio: 3 / 2;
 }
